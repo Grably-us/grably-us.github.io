@@ -19,7 +19,8 @@
 	let isAuthenticated = pb.authStore.isValid;
 	let userRole = pb.authStore.model?.role || '';
 	let isNavExpanded = false;
-  
+    const basePath = process.env.BASE_PATH || "";
+
 	pb.authStore.onChange(() => {
 	  isAuthenticated = pb.authStore.isValid;
 	  userRole = pb.authStore.model?.role || '';
@@ -30,7 +31,7 @@
 	}
   </script>
   
-  <Router {url}>
+  <Router {url} basepath={basePath}>
 	{#if isAuthenticated}
 		<div class="flex flex-grow pt-16 pb-16"> 
 		<Header />
