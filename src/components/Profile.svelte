@@ -40,7 +40,7 @@
       </div>
       <p class="mb-4">Role: {user.role}</p>
       <p class="mb-4">Wallet Balance: ${walletBalance.toFixed(2)}</p>
-      <FaSignOutAlt />
+      <FaSignOutAlt class="w-5 h-5" />
       <button 
         on:click={logout}
         class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 mr-2"
