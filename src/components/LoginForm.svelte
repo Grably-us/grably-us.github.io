@@ -9,7 +9,7 @@
     async function login() {
         try {
           await pb.collection('users').authWithPassword(email, password);
-          navigate('/contracts');
+          navigate('/');
         } catch (userError) {
           error = userError.message;
         }

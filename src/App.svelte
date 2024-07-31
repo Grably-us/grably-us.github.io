@@ -1,5 +1,6 @@
 <script>
 	import { Router, Link, Route } from "svelte-routing";
+	export let url = "";
 	import { slide } from 'svelte/transition';
 	import { pb } from './services/pocketbase';
 	import Home from "./routes/Home.svelte";
@@ -11,27 +12,25 @@
 	import Footer from "./components/Footer.svelte";
 	import Terms from "./routes/Terms.svelte";
 	import Privacy from "./routes/Privacy.svelte";
-	
+
 	// Import icons
-	import { FaHome, FaFileContract, FaPlusCircle, FaSignOutAlt } from 'svelte-icons/fa';
+	import { FaHome, FaFileContract, FaPlusCircle } from 'svelte-icons/fa';
 	
-	export let url = "";
+	const base = '';
 	let isAuthenticated = pb.authStore.isValid;
 	let userRole = pb.authStore.model?.role || '';
 	let isNavExpanded = false;
-    const basePath = process.env.BASE_PATH || "";
+
 
 	pb.authStore.onChange(() => {
 	  isAuthenticated = pb.authStore.isValid;
 	  userRole = pb.authStore.model?.role || '';
 	});
   
-	function logout() {
-	  pb.authStore.clear();
-	}
+
   </script>
   
-  <Router {url} basepath={basePath}>
+  <Router {url} basepath={base}>
 	{#if isAuthenticated}
 		<div class="flex flex-grow pt-16 pb-16"> 
 		<Header />
@@ -115,4 +114,6 @@
 	:global(footer) {
 	  bottom: 0;
 	}
+	
   </style>
+  

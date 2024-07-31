@@ -1,10 +1,10 @@
-import { spawn } from 'child_process';
 import svelte from 'rollup-plugin-svelte';
 import commonjs from '@rollup/plugin-commonjs';
-import terser from '@rollup/plugin-terser';
 import resolve from '@rollup/plugin-node-resolve';
 import livereload from 'rollup-plugin-livereload';
+import { terser } from 'rollup-plugin-terser';
 import css from 'rollup-plugin-css-only';
+import {sveltePreprocess} from 'svelte-preprocess';
 import replace from '@rollup/plugin-replace';
 
 const production = !process.env.ROLLUP_WATCH;
@@ -20,7 +20,7 @@ function serve() {
     return {
         writeBundle() {
             if (server) return;
-            server = spawn('npm', ['run', 'start', '--', '--dev', '--single'], {
+            server = require('child_process').spawn('npm', ['run', 'start', '--', '--dev'], {
                 stdio: ['ignore', 'inherit', 'inherit'],
                 shell: true
             });
@@ -45,6 +45,15 @@ export default {
             preventAssignment: true
         }),
         svelte({
+            preprocess: sveltePreprocess({
+                sourceMap: !production,
+                postcss: {
+                    plugins: [
+                        require('tailwindcss'),
+                        require('autoprefixer'),
+                    ],
+                },
+            }),
             compilerOptions: {
                 dev: !production
             }
@@ -52,16 +61,11 @@ export default {
         css({ output: 'bundle.css' }),
         resolve({
             browser: true,
-            dedupe: ['svelte'],
-            exportConditions: ['svelte']
+            dedupe: ['svelte']
         }),
         commonjs(),
         !production && serve(),
-        !production && livereload({
-            watch: 'public',
-            port: 35729,
-            exclusions: ['**/node_modules/**']
-        }),
+        !production && livereload('public'),
         production && terser()
     ],
     watch: {
