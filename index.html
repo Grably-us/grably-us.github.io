@@ -6,14 +6,11 @@
 	<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 	<title>Svelte app</title>
 
-	<!-- Add base tag for correct asset path resolution -->
-	<base href="/grably-frontend/">
+	<link rel='icon' type='image/png' href='/favicon.png'>
+	<link rel='stylesheet' href='/global.css'>
+	<link rel='stylesheet' href='/build/bundle.css'>
 
-	<link rel='icon' type='image/png' href='favicon.png'>
-	<link rel='stylesheet' href='global.css'>
-	<link rel='stylesheet' href='build/bundle.css'>
-
-	<script defer src='build/bundle.js'></script>
+	<script defer src='/build/bundle.js'></script>
 	<script type="text/javascript">
 		(function(l) {
 		  if (l.search[1] === '/') {
@@ -25,8 +22,9 @@
 			);
 		  }
 		}(window.location))
-	</script>
-</head>
+	  </script>
+	</head>
+
 <body>
 </body>
 </html>
