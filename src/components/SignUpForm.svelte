@@ -1,65 +1,100 @@
 <script>
-    import { pb } from '../services/pocketbase';
-    import { navigate } from 'svelte-routing';
-  
-    let name = '';
-    let email = '';
-    let password = '';
-    let confirmPassword = '';
-    let error = '';
-    let role = '';
+  import { pb } from '../services/pocketbase';
+  import { Link, navigate } from 'svelte-routing';
 
-  
-    async function signup() {
-      if (password !== confirmPassword) {
-        error = "Passwords don't match";
-        return;
-      }
-  
-      try {
-        const data = {
-          name,
-          email,
-          password,
-          passwordConfirm: confirmPassword,
-          role: role,
-        };
-        await pb.collection('users').create(data);
-        await pb.collection('users').authWithPassword(email, password);
-        navigate('/contracts');
-      } catch (e) {
+  let name = '';
+  let email = '';
+  let password = '';
+  let confirmPassword = '';
+  let role = 'Customer';
+  let agreeTerms = false;
+  let agreePolicy = false;
+  let error = '';
+
+  async function signup() {
+    if (password !== confirmPassword) {
+      error = "Passwords don't match";
+      return;
+    }
+
+    if (!agreeTerms || !agreePolicy) {
+      error = "You must agree to the Terms and Privacy Policy";
+      return;
+    }
+
+    try {
+      const userData = {
+        name,
+        email,
+        password,
+        passwordConfirm: confirmPassword,
+        role,
+        agreed_terms: agreeTerms,
+        agreed_policy: agreePolicy
+      };
+      
+      await pb.collection('users').create(userData);
+      
+      // Log the user in
+      await pb.collection('users').authWithPassword(email, password);
+      navigate('/');
+    } catch (e) {
+      console.error('Signup error:', e);
+      if (e.data && e.data.data) {
+        error = Object.entries(e.data.data)
+          .map(([key, value]) => `${key}: ${value.message}`)
+          .join(', ');
+      } else {
         error = e.message;
       }
     }
-  </script>
-  
+  }
+</script>
+
+<div class="max-w-md mx-auto mt-8">
   <h2 class="text-2xl mb-4 font-bold text-center">Sign Up for Grably</h2>
   {#if error}
     <p class="text-red-500 mb-4">{error}</p>
   {/if}
-  <form on:submit|preventDefault={signup}>
-    <div class="mb-4">
-      <label for="name" class="block mb-2">Name</label>
+  <form on:submit|preventDefault={signup} class="space-y-4">
+    <div>
+      <label for="name" class="block mb-1">Name</label>
       <input id="name" bind:value={name} type="text" class="w-full p-2 border rounded" required>
     </div>
-    <div class="mb-4">
-      <label for="email" class="block mb-2">Email</label>
+    <div>
+      <label for="email" class="block mb-1">Email</label>
       <input id="email" bind:value={email} type="email" class="w-full p-2 border rounded" required>
     </div>
-    <div class="mb-4">
-      <label for="password" class="block mb-2">Password</label>
+    <div>
+      <label for="password" class="block mb-1">Password</label>
       <input id="password" bind:value={password} type="password" class="w-full p-2 border rounded" required>
     </div>
-    <div class="mb-4">
-      <label for="confirmPassword" class="block mb-2">Confirm Password</label>
+    <div>
+      <label for="confirmPassword" class="block mb-1">Confirm Password</label>
       <input id="confirmPassword" bind:value={confirmPassword} type="password" class="w-full p-2 border rounded" required>
     </div>
-    <div class="mb-4">
-      <label for="role" class="block mb-2">Role</label>
+    <div>
+      <label for="role" class="block mb-1">Role</label>
       <select id="role" bind:value={role} class="w-full p-2 border rounded">
-        <option value="user">Customer</option>
-        <option value="admin">DataProvider</option>
+        <option value="Customer">Customer</option>
+        <option value="DataProvider">Data Provider</option>
       </select>
+    </div>
+    <div>
+      <label class="inline-flex items-center">
+        <input type="checkbox" bind:checked={agreeTerms} class="mr-2">
+        <span>I agree to the <Link to="/terms" class="text-blue-500 hover:underline">Terms and Conditions</Link></span>
+      </label>
+    </div>
+    <div>
+      <label class="inline-flex items-center">
+        <input type="checkbox" bind:checked={agreePolicy} class="mr-2">
+        <span>I agree to the <Link to="/privacy" class="text-blue-500 hover:underline">Privacy Policy</Link></span>
+      </label>
     </div>
     <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Sign Up</button>
   </form>
+  <div class="mt-4 text-center">
+    <Link to="/login" class="text-blue-500 hover:underline">Already have an account? Log in</Link>
+  </div>
+</div>

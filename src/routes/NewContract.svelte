@@ -8,33 +8,41 @@
   let amount_requested = 0;
   let price_per_point = 0;
   let deadline = '';
+  let thumbnail = null;
   let error = '';
 
   onMount(() => {
-    if (pb.authStore.model?.role !== 'Customer' && pb.authStore.model?.role !== 'Admin') {
+    if (pb.authStore.model?.role === 'DataProvider') {
       navigate('/');
     }
   });
 
   async function submitContract() {
     try {
-      const data = {
-        title,
-        description,
-        amount_requested,
-        price_per_point,
-        deadline,
-        status: 'Draft',
-        creator: pb.authStore.model.id
-      };
-      console.log('Submitting data:', data);
-      const record = await pb.collection('Contract').create(data);
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('description', description);
+      formData.append('amount_requested', amount_requested);
+      formData.append('price_per_point', price_per_point);
+      formData.append('deadline', deadline);
+      formData.append('status', 'Draft');
+      formData.append('creator', pb.authStore.model.id);
+      if (thumbnail) {
+        formData.append('thumbnail', thumbnail);
+      }
+
+      const record = await pb.collection('Contract').create(formData);
       console.log('Created record:', record);
       navigate('/contracts');
     } catch (e) {
       console.error('Error creating contract:', e);
       error = e.message;
     }
+  }
+
+  function handleThumbnailChange(event) {
+    const file = event.target.files[0];
+    thumbnail = file;
   }
 </script>
 
@@ -63,6 +71,10 @@
     <div class="mb-4">
       <label for="deadline" class="block mb-2 font-semibold">Deadline</label>
       <input id="deadline" bind:value={deadline} type="date" class="w-full p-2 border rounded" required>
+    </div>
+    <div class="mb-4">
+      <label for="thumbnail" class="block mb-2 font-semibold">Thumbnail</label>
+      <input id="thumbnail" type="file" accept="image/*" on:change={handleThumbnailChange} class="w-full p-2 border rounded" required>
     </div>
     <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition duration-300">Submit Contract</button>
   </form>

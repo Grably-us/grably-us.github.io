@@ -1,47 +1,62 @@
 <script>
-    // You can add any necessary imports or logic here
-  </script>
+  // You can add any necessary imports or logic here
+</script>
+
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold mb-6">Terms of Use</h1>
   
-  <div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-6">Terms and Conditions</h1>
-    
-    <section class="mb-8">
-      <h2 class="text-2xl font-semibold mb-4">1. Acceptance of Terms</h2>
-      <p>By accessing or using Grably, you agree to be bound by these Terms and Conditions and all applicable laws and regulations.</p>
-    </section>
-  
-    <section class="mb-8">
-      <h2 class="text-2xl font-semibold mb-4">2. Use of Service</h2>
-      <p>You may use our service only for lawful purposes and in accordance with these Terms. You agree not to use our service:</p>
-      <ul class="list-disc pl-5 mt-2">
-        <li>In any way that violates any applicable federal, state, local, or international law or regulation</li>
-        <li>To transmit, or procure the sending of, any advertising or promotional material, including any "junk mail", "chain letter," "spam," or any other similar solicitation</li>
-        <li>To impersonate or attempt to impersonate Grably, a Grably employee, another user, or any other person or entity</li>
-      </ul>
-    </section>
-  
-    <section class="mb-8">
-      <h2 class="text-2xl font-semibold mb-4">3. Intellectual Property</h2>
-      <p>The Service and its original content, features, and functionality are and will remain the exclusive property of Grably and its licensors.</p>
-    </section>
-  
-    <section class="mb-8">
-      <h2 class="text-2xl font-semibold mb-4">4. Termination</h2>
-      <p>We may terminate or suspend your account and bar access to the Service immediately, without prior notice or liability, under our sole discretion, for any reason whatsoever and without limitation, including but not limited to a breach of the Terms.</p>
-    </section>
-  
-    <section class="mb-8">
-      <h2 class="text-2xl font-semibold mb-4">5. Limitation of Liability</h2>
-      <p>In no event shall Grably, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or inability to access or use the Service.</p>
-    </section>
-  
-    <section class="mb-8">
-      <h2 class="text-2xl font-semibold mb-4">6. Changes to Terms</h2>
-      <p>We reserve the right, at our sole discretion, to modify or replace these Terms at any time. What constitutes a material change will be determined at our sole discretion.</p>
-    </section>
-  
-    <section>
-      <h2 class="text-2xl font-semibold mb-4">7. Contact Us</h2>
-      <p>If you have any questions about these Terms, please contact us at: <a href="mailto:legal@grably.us" class="text-blue-600 hover:underline">legal@grably.us</a></p>
-    </section>
-  </div>
+  <section class="mb-8">
+    <h2 class="text-2xl font-semibold mb-4">1. Acceptance of Terms</h2>
+    <p>By accessing and using Grably's website and services, you agree to comply with and be bound by these Terms of Use.</p>
+  </section>
+
+  <section class="mb-8">
+    <h2 class="text-2xl font-semibold mb-4">2. Services</h2>
+    <p>Grably offers access to various datasets and services, including the ability to purchase, customize, and sell data.</p>
+  </section>
+
+  <section class="mb-8">
+    <h2 class="text-2xl font-semibold mb-4">3. User Accounts</h2>
+    <p>Users must create an account to access certain features. You are responsible for maintaining the confidentiality of your account information.</p>
+  </section>
+
+  <section class="mb-8">
+    <h2 class="text-2xl font-semibold mb-4">4. Data Purchases</h2>
+    <p>Purchases are made via Grably's secure platform. Refunds are not typically provided for digital goods but will be considered on a case-by-case basis.</p>
+  </section>
+
+  <section class="mb-8">
+    <h2 class="text-2xl font-semibold mb-4">5. Data Provision</h2>
+    <p>Providers can submit data securely through the Grably platform. Compensation is provided upon the sale of data, which is securely stored until a sale is confirmed.</p>
+  </section>
+
+  <section class="mb-8">
+    <h2 class="text-2xl font-semibold mb-4">6. Intellectual Property</h2>
+    <p>All content on Grably, including datasets, is protected by intellectual property laws. Users are granted a limited, non-exclusive license to use purchased data in accordance with the licensing terms.</p>
+  </section>
+
+  <section class="mb-8">
+    <h2 class="text-2xl font-semibold mb-4">7. Privacy</h2>
+    <p>Grably respects user privacy and employs industry-standard security measures to protect user data.</p>
+  </section>
+
+  <section class="mb-8">
+    <h2 class="text-2xl font-semibold mb-4">8. Limitation of Liability</h2>
+    <p>Grably is not liable for any indirect, incidental, or consequential damages arising from the use of its services.</p>
+  </section>
+
+  <section class="mb-8">
+    <h2 class="text-2xl font-semibold mb-4">9. Governing Law</h2>
+    <p>These Terms of Use are governed by and construed in accordance with the laws of the state in which Grably is headquartered.</p>
+  </section>
+
+  <section class="mb-8">
+    <h2 class="text-2xl font-semibold mb-4">10. Changes to Terms</h2>
+    <p>Grably reserves the right to modify these terms at any time. Changes will be posted on the website and will become effective immediately upon posting.</p>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-semibold mb-4">Contact Us</h2>
+    <p>If you have any questions about these Terms, please contact us at: <a href="mailto:hello@grably.us" class="text-blue-600 hover:underline">hello@grably.us</a></p>
+  </section>
+</div>
