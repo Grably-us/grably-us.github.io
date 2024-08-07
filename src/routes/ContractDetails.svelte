@@ -27,20 +27,19 @@
   async function loadContract() {
     try {
       contract = await pb.collection('Contract').getOne(id, {
-        expand: 'creator'
+        expand: 'creator,DataBatch_via_contract.DataPoint_via_batch'
       });
       console.log('Raw API response:', JSON.stringify(contract, null, 2));
       editedContract = { ...contract };
 
-      // Check if expand property exists and handle accordingly
       if (contract.expand && contract.expand['DataBatch_via_contract']) {
         dataBatches = contract.expand['DataBatch_via_contract'];
       } else {
-        dataBatches = []; // Set to empty array if no data batches
-        error = 'No data batches found for this contract.';
+        dataBatches = [];
+        console.log('No data batches found for this contract.');
       }
 
-      calculateStats(); // Calculate stats
+      calculateStats();
     } catch (err) {
       console.error('Error fetching contract:', err);
       error = err.message;
@@ -53,29 +52,23 @@
     largestFileSize = 0;
     totalDataSize = 0;
 
-    // If there are no data batches, all stats will remain 0
-    if (dataBatches.length === 0) {
-      return; // Exit early if no data batches
-    }
-
-    dataBatches.forEach(batch => {
-      if (batch.expand && batch.expand['DataPoint_via_batch']) {
-        const dataPoints = batch.expand['DataPoint_via_batch'];
-        if (dataPoints.length === 0) {
-          error = `No data points found for batch ID: ${batch.id}`;
-          return; // Skip to the next batch
+    if (dataBatches.length > 0) {
+      dataBatches.forEach(batch => {
+        if (batch.expand && batch.expand['DataPoint_via_batch']) {
+          const dataPoints = batch.expand['DataPoint_via_batch'];
+          dataPoints.forEach(dataPoint => {
+            totalFilesUploaded++;
+            if (dataPoint.owner === pb.authStore.model.id) {
+              userFilesUploaded++;
+            }
+            const fileSize = dataPoint.data ? dataPoint.data.size : 0;
+            largestFileSize = Math.max(largestFileSize, fileSize);
+            totalDataSize += fileSize;
+          });
         }
-        dataPoints.forEach(dataPoint => {
-          totalFilesUploaded++;
-          if (dataPoint.owner === pb.authStore.model.id) {
-            userFilesUploaded++;
-          }
-          const fileSize = dataPoint.data ? dataPoint.data.size : 0;
-          largestFileSize = Math.max(largestFileSize, fileSize);
-          totalDataSize += fileSize;
-        });
-      }
-    });
+      });
+    }
+    // If there are no data batches, all stats will remain 0
   }
   
   async function handleFileUpload() {
@@ -95,8 +88,11 @@
         owner: pb.authStore.model.id,
         status: 'pending',
         description: 'Uploaded batch',
+        comment: '',
         contract: id
       });
+
+      const dataPoints = [];
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
@@ -105,21 +101,28 @@
         formData.append('owner', pb.authStore.model.id);
         formData.append('batch', batch.id);
         formData.append('status', 'Pending');
+        formData.append('description', `File ${i + 1}`);
+        formData.append('tags', '[]');
+        formData.append('comment', '');
+        formData.append('rejection_reason', '');
 
         try {
-          await pb.collection('DataPoint').create(formData);
+          const createdDataPoint = await pb.collection('DataPoint').create(formData);
+          dataPoints.push(createdDataPoint);
           progress = ((i + 1) / files.length) * 100;
         } catch (error) {
           uploadErrors.push(`Error uploading ${file.name}: ${error.message}`);
         }
       }
 
+      // Update the batch with the created data points
+      await pb.collection('DataBatch').update(batch.id, {
+        data_points: dataPoints.map(dp => dp.id)
+      });
+
       uploadStatus = 'Upload completed';
       // Refresh the contract data to show the new uploads
-      contract = await pb.collection('Contract').getOne(id, {
-        expand: 'creator,DataBatch_via_contract.DataPoint_via_batch'
-      });
-      calculateStats();
+      await loadContract();
     } catch (error) {
       uploadStatus = 'Upload failed';
       console.error('Error during upload:', error);
