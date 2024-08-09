@@ -1,0 +1,126 @@
+<script>
+	import { Router, Route } from "svelte-routing";
+	import { pb } from './services/pocketbase';
+	import { onMount } from 'svelte';
+	import Home from "./routes/Home.svelte";
+	import Contracts from "./routes/Contracts.svelte";
+	import Login from "./routes/Login.svelte";
+	import NewContract from "./routes/NewContract.svelte";
+	import ContractDetails from "./routes/ContractDetails.svelte";
+	import Header from "./components/Header.svelte";
+	import Footer from "./components/Footer.svelte";
+	import { fade } from 'svelte/transition';
+	
+	export let url = "";
+	const base = '';
+	let isAuthenticated = pb.authStore.isValid;
+	let userRole = pb.authStore.model?.role || '';
+	let user = pb.authStore.model;
+	let walletBalance = 0;
+	let loading = true;
+	let error = null;
+    let segment = '';
+
+  $: {
+    if (typeof window !== 'undefined') {
+      segment = window.location.pathname.split('/')[1];
+    }
+  }
+	onMount(async () => {
+		try {
+			loading = true;
+			if (pb.authStore.isValid) {
+				user = pb.authStore.model;
+				if (user.wallet) {
+					const wallet = await pb.collection('Wallet').getOne(user.wallet);
+					walletBalance = wallet.token_balance;
+				}
+			}
+		} catch (err) {
+			error = err.message;
+		} finally {
+			loading = false;
+		}
+
+		pb.authStore.onChange((auth) => {
+			isAuthenticated = auth !== null;
+			userRole = auth?.model?.role || '';
+			user = auth?.model;
+			updateWalletBalance();
+		});
+	});
+
+	async function updateWalletBalance() {
+		if (user && user.wallet) {
+			try {
+				const wallet = await pb.collection('Wallet').getOne(user.wallet);
+				walletBalance = wallet.token_balance;
+			} catch (err) {
+				alert('Error fetching wallet balance');
+			}
+		}
+	}
+
+	function handleProfileUpdate(event) {
+		user = event.detail.user;
+		walletBalance = event.detail.walletBalance;
+	}
+
+	function handleError(err) {
+		error = err.message;
+		setTimeout(() => {
+			error = null;
+		}, 5000);
+	}
+</script>
+<Router {url} basepath={base}>
+	<div class="min-h-screen flex flex-col">
+	  {#if loading}
+		<div class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+		  <div class="bg-white p-4 rounded-lg shadow-lg">
+			<p class="text-lg font-semibold">Loading...</p>
+		  </div>
+		</div>
+	  {/if}
+  
+	  {#if error}
+		<div class="fixed top-0 left-0 right-0 bg-red-500 text-white p-4 text-center z-50" transition:fade>
+		  <p>{error}</p>
+		</div>
+	  {/if}
+  
+	  {#if isAuthenticated}
+		<Header {userRole} {user} {walletBalance} {segment} on:profileUpdate={handleProfileUpdate} />
+		<main class="flex-grow p-6 bg-gray-50 mt-14">
+		  <div class="max-w-7xl mx-auto">
+			<Route path="/" component={Home} />
+			<Route path="/contracts" component={Contracts} />
+			<Route path="/contract/:id" component={ContractDetails} />
+			<Route path="/new-contract" component={NewContract} />
+		  </div>
+		</main>
+		<Footer />
+	  {:else}
+		<Route path="*" component={Login} />
+	  {/if}
+	</div>
+  </Router>
+
+<style>
+	:global(body) {
+		margin: 0;
+		padding: 0;
+		--bgColorMenu: #1d1d27;
+		--duration: 0.7s;
+	}
+  
+	:global(html *) {
+		box-sizing: border-box;
+	}
+
+	@media (max-width: 640px) {
+		main {
+			padding: 1rem;
+		}
+	}
+</style>
