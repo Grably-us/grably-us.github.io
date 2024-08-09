@@ -15,9 +15,9 @@
           try {
               await ensureWalletExists(authData.record.id);
           } catch (walletError) {
-              console.error('Failed to ensure wallet exists:', walletError);
               // Optionally, you can show a warning to the user here
               // but still allow them to proceed
+              error = walletError.message;
           }
 
           navigate('/');
