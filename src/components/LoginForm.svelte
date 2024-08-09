@@ -1,7 +1,7 @@
 <script>
   import { navigate } from 'svelte-routing';
   import { pb } from '../services/pocketbase';
-  import { ensureWalletExists } from '../services/walletService';
+  import { ensureWalletExists } from '../services/WalletService';
 
   let email = '';
   let password = '';
