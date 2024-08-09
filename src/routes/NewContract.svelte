@@ -32,7 +32,6 @@
       }
 
       const record = await pb.collection('Contract').create(formData);
-      console.log('Created record:', record);
       navigate('/contracts');
     } catch (e) {
       console.error('Error creating contract:', e);

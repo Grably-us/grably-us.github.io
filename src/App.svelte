@@ -1,7 +1,5 @@
 <script>
-	import { Router, Link, Route, navigate } from "svelte-routing";
-	export let url = "";
-	import { slide } from 'svelte/transition';
+	import { Router, Route } from "svelte-routing";
 	import { pb } from './services/pocketbase';
 	import { onMount } from 'svelte';
 	import Home from "./routes/Home.svelte";
@@ -11,141 +9,118 @@
 	import ContractDetails from "./routes/ContractDetails.svelte";
 	import Header from "./components/Header.svelte";
 	import Footer from "./components/Footer.svelte";
-	import Terms from "./routes/Terms.svelte";
-	import Privacy from "./routes/Privacy.svelte";
-  
-	// Import icons
-	import { FaHome, FaFileContract, FaPlusCircle } from 'svelte-icons/fa';
+	import { fade } from 'svelte/transition';
 	
+	export let url = "";
 	const base = '';
 	let isAuthenticated = pb.authStore.isValid;
 	let userRole = pb.authStore.model?.role || '';
-	let isNavExpanded = false;
-  
-	import { ensureWalletExists } from './services/walletService';
-  
-	async function createWalletIfNeeded() {
-	  if (pb.authStore.isValid && !pb.authStore.model.wallet) {
-		try {
-		  await ensureWalletExists(pb.authStore.model.id);
-		} catch (error) {
-		  console.error('Failed to create wallet:', error);
-		  alert('Failed to create wallet: ' + error.message);
-		}
-	  }
-	}
-  
-	onMount(() => {
-	  pb.authStore.onChange((auth) => {
-		isAuthenticated = auth !== null;
-		userRole = auth?.model?.role || '';
-		if (isAuthenticated) {
-		  createWalletIfNeeded();
-		}
-	  });
-	});
-  
-	function isNewContractDisabled() {
-	  return userRole === 'DataProvider';
-	}
-  
-	function handleNewContractAction(event) {
-	  if (!isNewContractDisabled()) {
-		navigate('/new-contract');
-	  }
-	}
-  </script>
+	let user = pb.authStore.model;
+	let walletBalance = 0;
+	let loading = true;
+	let error = null;
+    let segment = '';
 
+  $: {
+    if (typeof window !== 'undefined') {
+      segment = window.location.pathname.split('/')[1];
+    }
+  }
+	onMount(async () => {
+		try {
+			loading = true;
+			if (pb.authStore.isValid) {
+				user = pb.authStore.model;
+				if (user.wallet) {
+					const wallet = await pb.collection('Wallet').getOne(user.wallet);
+					walletBalance = wallet.token_balance;
+				}
+			}
+		} catch (err) {
+			error = err.message;
+		} finally {
+			loading = false;
+		}
+
+		pb.authStore.onChange((auth) => {
+			isAuthenticated = auth !== null;
+			userRole = auth?.model?.role || '';
+			user = auth?.model;
+			updateWalletBalance();
+		});
+	});
+
+	async function updateWalletBalance() {
+		if (user && user.wallet) {
+			try {
+				const wallet = await pb.collection('Wallet').getOne(user.wallet);
+				walletBalance = wallet.token_balance;
+			} catch (err) {
+				alert('Error fetching wallet balance');
+			}
+		}
+	}
+
+	function handleProfileUpdate(event) {
+		user = event.detail.user;
+		walletBalance = event.detail.walletBalance;
+	}
+
+	function handleError(err) {
+		error = err.message;
+		setTimeout(() => {
+			error = null;
+		}, 5000);
+	}
+</script>
 <Router {url} basepath={base}>
-  {#if isAuthenticated}
-    <div class="flex flex-grow pt-16 pb-16"> 
-      <Header />
-      <div class="flex flex-grow">
-        <nav 
-          class="fixed left-0 top-16 bottom-16 z-10 bg-gradient-to-r from-gray-100 to-transparent transition-all duration-500 ease-in-out overflow-hidden flex flex-col justify-center"
-          class:w-32={isNavExpanded}
-          class:w-16={!isNavExpanded}
-          on:mouseenter={() => isNavExpanded = true}
-          on:mouseleave={() => isNavExpanded = false}
-        >
-          <ul class="space-y-8">
-            <li>
-              <Link to="/" class="flex items-center p-2 rounded hover:bg-white hover:bg-opacity-50 w-full">
-                <div class="w-8 h-8 flex-shrink-0 mx-auto">
-                  <FaHome />
-                </div>
-                <span class="ml-4 whitespace-nowrap overflow-hidden" class:w-0={!isNavExpanded} class:w-auto={isNavExpanded} transition:slide={{duration: 500, axis: 'x'}}>
-                  Home
-                </span>
-              </Link>
-            </li>
-            <li>
-              <Link to="/contracts" class="flex items-center p-2 rounded hover:bg-white hover:bg-opacity-50 w-full">
-                <div class="w-8 h-8 flex-shrink-0 mx-auto">
-                  <FaFileContract />
-                </div>
-                <span class="ml-4 whitespace-nowrap overflow-hidden" class:w-0={!isNavExpanded} class:w-auto={isNavExpanded} transition:slide={{duration: 500, axis: 'x'}}>
-                  Contracts
-                </span>
-              </Link>
-            </li>
-            <li>
-              <button 
-                type="button"
-                class="flex items-center p-2 rounded hover:bg-white hover:bg-opacity-50 w-full focus:outline-none focus:ring-2 focus:ring-blue-300"
-                class:opacity-50={isNewContractDisabled()}
-                class:cursor-not-allowed={isNewContractDisabled()}
-                on:click={handleNewContractAction}
-                on:keydown={(e) => e.key === 'Enter' && handleNewContractAction(e)}
-                disabled={isNewContractDisabled()}
-                aria-label="New Contract"
-              >
-                <div class="w-8 h-8 flex-shrink-0 mx-auto">
-                  <FaPlusCircle />
-                </div>
-                <span class="ml-4 whitespace-nowrap overflow-hidden" class:w-0={!isNavExpanded} class:w-auto={isNavExpanded} transition:slide={{duration: 500, axis: 'x'}}>
-                  New Contract
-                </span>
-              </button>
-            </li>
-          </ul>
-        </nav>
-        <main class="flex-grow p-4 bg-gray-50 ml-16 mt-16 mb-16">
-          <Route path="/" component={Home} />
-          <Route path="/contracts" component={Contracts} />
-          <Route path="/contract/:id" component={ContractDetails} />
-          <Route path="/new-contract" component={NewContract} />
-          <Route path="/terms" component={Terms} />
-          <Route path="/privacy" component={Privacy} />
-        </main>
-      </div>
-      <Footer />
-    </div>
-  {:else}
-    <Route path="*" component={Login} />
-  {/if}
-</Router>
-  <style>
-	:global(body) {
-	  margin: 0;
-	  padding: 0;
-	}
-	:global(svg) {
-	  width: 100%;
-	  height: 100%;
-	}
-	:global(header), :global(footer) {
-	  position: fixed;
-	  left: 0;
-	  right: 0;
-	  z-index: 20;
-	}
-	:global(header) {
-	  top: 0;
-	}
-	:global(footer) {
-	  bottom: 0;
-	}
-	
-  </style>
+	<div class="min-h-screen flex flex-col">
+	  {#if loading}
+		<div class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+		  <div class="bg-white p-4 rounded-lg shadow-lg">
+			<p class="text-lg font-semibold">Loading...</p>
+		  </div>
+		</div>
+	  {/if}
   
+	  {#if error}
+		<div class="fixed top-0 left-0 right-0 bg-red-500 text-white p-4 text-center z-50" transition:fade>
+		  <p>{error}</p>
+		</div>
+	  {/if}
+  
+	  {#if isAuthenticated}
+		<Header {userRole} {user} {walletBalance} {segment} on:profileUpdate={handleProfileUpdate} />
+		<main class="flex-grow p-6 bg-gray-50 mt-14">
+		  <div class="max-w-7xl mx-auto">
+			<Route path="/" component={Home} />
+			<Route path="/contracts" component={Contracts} />
+			<Route path="/contract/:id" component={ContractDetails} />
+			<Route path="/new-contract" component={NewContract} />
+		  </div>
+		</main>
+		<Footer />
+	  {:else}
+		<Route path="*" component={Login} />
+	  {/if}
+	</div>
+  </Router>
+
+<style>
+	:global(body) {
+		margin: 0;
+		padding: 0;
+		--bgColorMenu: #1d1d27;
+		--duration: 0.7s;
+	}
+  
+	:global(html *) {
+		box-sizing: border-box;
+	}
+
+	@media (max-width: 640px) {
+		main {
+			padding: 1rem;
+		}
+	}
+</style>

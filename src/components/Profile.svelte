@@ -1,6 +1,7 @@
 <script>
   import { createEventDispatcher } from 'svelte';
   import { pb } from '../services/pocketbase';
+  import { fade } from 'svelte/transition';
 
   export let user;
   export let walletBalance;
@@ -10,6 +11,13 @@
   let editMode = false;
   let editedUser = { ...user };
   let error = '';
+
+  // Placeholder for user stats - replace with actual data fetching if needed
+  let userStats = {
+    contractsCreated: 5,
+    contractsCompleted: 3,
+    totalEarnings: 1000
+  };
 
   function close() {
     dispatch('close');
@@ -33,6 +41,9 @@
       user = updatedUser;
       editMode = false;
       error = '';
+      
+      // Dispatch an event to update the app state
+      dispatch('profileUpdate', { user: updatedUser, walletBalance });
     } catch (e) {
       error = e.message;
     }
@@ -46,8 +57,8 @@
   }
 </script>
 
-<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-  <div class="bg-white rounded-lg p-8 max-w-md w-full">
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" transition:fade>
+  <div class="bg-white rounded-lg p-8 max-w-md w-full max-h-90vh overflow-y-auto">
     <h2 class="text-2xl font-bold mb-4">User Profile</h2>
     {#if error}
       <p class="text-red-500 mb-4">{error}</p>
@@ -56,7 +67,7 @@
       <img 
         src={getAvatarUrl(user)} 
         alt="User avatar" 
-        class="w-20 h-20 rounded-full mr-4 bg-gray-200"
+        class="w-20 h-20 rounded-full mr-4"
       />
       <div>
         {#if editMode}
@@ -68,29 +79,26 @@
         {/if}
       </div>
     </div>
+    
+    <div class="mb-4">
+      <h3 class="text-lg font-semibold mb-2">User Stats</h3>
+      <p>Contracts Created: {userStats.contractsCreated}</p>
+      <p>Contracts Completed: {userStats.contractsCompleted}</p>
+      <p>Total Earnings: ${userStats.totalEarnings}</p>
+    </div>
+    
     <p class="mb-4">Role: {user.role}</p>
     <p class="mb-4">Wallet Balance: ${walletBalance.toFixed(2)}</p>
     
     {#if editMode}
-    <div class="mb-4">
-      <label for="phone" class="block mb-2">Phone</label>
-      <input id="phone" bind:value={editedUser.phone} type="tel" class="w-full border rounded p-2" />
-    </div>
-    <div class="mb-4">
-      <label for="agreed_policy" class="inline-flex items-center">
-        <input id="agreed_policy" bind:checked={editedUser.agreed_policy} type="checkbox" class="mr-2" />
-        <span>Agreed to Policy</span>
-      </label>
-    </div>
-    <div class="mb-4">
-      <label for="agreed_terms" class="inline-flex items-center">
-        <input id="agreed_terms" bind:checked={editedUser.agreed_terms} type="checkbox" class="mr-2" />
-        <span>Agreed to Terms</span>
-      </label>
-    </div>
-  {/if}
-
-    {#if editMode}
+      <div class="mb-4">
+        <label for="phone" class="block mb-2">Phone</label>
+        <input id="phone" bind:value={editedUser.phone} type="tel" class="w-full border rounded p-2" />
+      </div>
+      <div class="mb-4">
+        <label for="bio" class="block mb-2">Bio</label>
+        <textarea id="bio" bind:value={editedUser.bio} class="w-full border rounded p-2" rows="3"></textarea>
+      </div>
       <button 
         on:click={saveChanges}
         class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 mr-2"
@@ -120,3 +128,10 @@
     </button>
   </div>
 </div>
+
+<style>
+  /* You can add any specific styles for the Profile component here */
+  .max-h-90vh {
+    max-height: 90vh;
+  }
+</style>

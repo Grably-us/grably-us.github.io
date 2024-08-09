@@ -1,38 +1,25 @@
 <script>
+  import { link } from 'svelte-routing';
   import { pb } from '../services/pocketbase';
   import { onMount } from 'svelte';
   import Profile from './Profile.svelte';
+  import { fade } from 'svelte/transition';
 
-  let user = null;
-  let walletBalance = 0;
+  export let userRole;
+  export let segment;
+  export let user;
+  export let walletBalance;
+
   let showProfile = false;
-  let loading = true;
-  let authStoreModel = null;
-
-  onMount(async () => {
-    if (pb.authStore.isValid) {
-      user = pb.authStore.model;
-      authStoreModel = JSON.parse(JSON.stringify(pb.authStore.model)); // Deep copy for debugging
-      if (user.wallet) {
-        try {
-          const wallet = await pb.collection('Wallet').getOne(user.wallet);
-          walletBalance = wallet.token_balance;
-        } catch (error) {
-          console.error('Error fetching wallet:', error);
-        }
-      }
-    }
-    loading = false;
-    console.log('Auth Store Model:', authStoreModel);
-  });
+  let loading = false;
 
   function toggleProfile() {
     showProfile = !showProfile;
   }
 
-  function handleKeyDown(event) {
-    if (event.key === 'Enter' || event.key === ' ') {
-      toggleProfile();
+  function handleNewContractAction(event) {
+    if (userRole === 'DataProvider') {
+      event.preventDefault();
     }
   }
 
@@ -44,40 +31,113 @@
   }
 </script>
 
-<header class="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-b-lg shadow-lg">
-  <div class="container mx-auto flex justify-between items-center">
-    <h1 class="text-2xl font-bold">Grably</h1>
-    {#if !loading}
-      {#if user}
-        <div>
-          <button
-            type="button"
-            class="flex items-center cursor-pointer bg-transparent border-none text-white"
-            on:click={toggleProfile}
-            on:keydown={handleKeyDown}
-            aria-haspopup="true"
-            aria-expanded={showProfile}
-          >
-            <img 
-              src={getAvatarUrl(user)} 
-              alt="User avatar" 
-              class="w-10 h-10 rounded-full mr-2 bg-white"
-            />
-            <div>
-              <p class="font-semibold">{user.name || 'User'}</p>
-              <p class="text-sm">Balance: ${walletBalance.toFixed(2)}</p>
-            </div>
-          </button>
+<header class="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-600 to-purple-600 shadow-sm text-white p-2 z-10">
+  <div class="container mx-auto flex justify-center items-center">
+    <h1 class="text-xl font-bold flex-shrink-0">Grably</h1>
+    
+    <nav class="flex-grow flex justify-between items-center mx-4">
+      <a href="/" use:link class="menu-item group" class:active={segment === undefined}>
+        <svg viewBox="0 0 24 24" class="icon"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <span class="tooltip">Home</span>
+      </a>
+      <a href="/contracts" use:link class="menu-item group" class:active={segment === 'contracts'}>
+        <svg viewBox="0 0 24 24" class="icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>
+        <span class="tooltip">Contracts</span>
+      </a>
+      <a
+        href="/new-contract"
+        use:link
+        class="menu-item group"
+        class:active={segment === 'new-contract'}
+        class:disabled={userRole === 'DataProvider'}
+        on:click|preventDefault={handleNewContractAction}
+      >
+        <svg viewBox="0 0 24 24" class="icon"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        <span class="tooltip">New Contract</span>
+      </a>
+    </nav>
+    
+    {#if !loading && user}
+      <button
+        type="button"
+        class="flex items-center space-x-2 bg-white bg-opacity-20 rounded-full px-3 py-1 hover:bg-opacity-30 transition-colors duration-200 flex-shrink-0"
+        on:click={toggleProfile}
+      >
+        <img
+          src={getAvatarUrl(user)}
+          alt="User avatar"
+          class="w-8 h-8 rounded-full"
+        />
+        <div class="text-left">
+          <p class="font-semibold text-xs">{user.name || 'User'}</p>
+          <p class="text-xs opacity-80">Balance: ${walletBalance.toFixed(2)}</p>
         </div>
-      {:else}
-        <p>Not logged in</p>
-      {/if}
-    {:else}
-      <p>Loading...</p>
+      </button>
     {/if}
   </div>
 </header>
 
 {#if showProfile}
-  <Profile {user} {walletBalance} on:close={() => showProfile = false} />
+  <div transition:fade>
+    <Profile {user} {walletBalance} on:close={() => showProfile = false} />
+  </div>
 {/if}
+
+<style>
+.menu-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.icon {
+  width: 32px;
+  height: 32px;
+  fill: white;
+  transition: all 0.3s ease;
+}
+
+.menu-item:hover .icon {
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+}
+
+.tooltip {
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.menu-item:hover .tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-5px);
+}
+
+.menu-item.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.active {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+</style>

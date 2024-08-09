@@ -5,7 +5,6 @@ export async function ensureWalletExists(userId) {
     const user = await pb.collection('users').getOne(userId, { expand: 'wallet' });
     
     if (user.expand.wallet) {
-      console.log('User already has a wallet');
       return user.expand.wallet;
     }
 
@@ -21,10 +20,10 @@ export async function ensureWalletExists(userId) {
       wallet: wallet.id
     });
 
-    console.log('New wallet created for user');
+
     return wallet;
   } catch (error) {
-    console.error('Error ensuring wallet exists:', error);
+
     throw error;
   }
 }
