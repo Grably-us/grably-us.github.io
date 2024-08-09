@@ -1,8 +1,5 @@
 <script>
     import { onMount } from 'svelte';
-    import { Link, navigate } from 'svelte-routing';
-    import { pb } from '../services/pocketbase';
-    import { ensureWalletExists } from '../services/walletService';
     import LoginForm from '../components/LoginForm.svelte';
     import SignupForm from '../components/SignUpForm.svelte';
     import PasswordResetForm from '../components/PasswordResetForm.svelte';
