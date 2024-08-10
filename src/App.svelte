@@ -9,7 +9,8 @@
 	import ContractDetails from "./routes/ContractDetails.svelte";
 	import Header from "./components/Header.svelte";
 	import Footer from "./components/Footer.svelte";
-	
+	import Terms from "./routes/Terms.svelte";
+	import Privacy from "./routes/Privacy.svelte";
 	import { fade } from 'svelte/transition';
 	
 	export let url = "";
@@ -98,7 +99,8 @@
 			<Route path="/contracts" component={Contracts} />
 			<Route path="/contract/:id" component={ContractDetails} />
 			<Route path="/new-contract" component={NewContract} />
-
+			<Route path="/terms" component={Terms} />
+			<Route path="/privacy" component={Privacy} />
 		  </div>
 		</main>
 		<Footer />
