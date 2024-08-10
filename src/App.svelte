@@ -1,5 +1,5 @@
 <script>
-	import { Router, Route } from "svelte-routing";
+	import { Router, Route, lazy } from "svelte-routing";
 	import { pb } from './services/pocketbase';
 	import { onMount } from 'svelte';
 	import Home from "./routes/Home.svelte";
@@ -9,6 +9,10 @@
 	import ContractDetails from "./routes/ContractDetails.svelte";
 	import Header from "./components/Header.svelte";
 	import Footer from "./components/Footer.svelte";
+
+	const Terms = lazy(() => import('./routes/Terms.svelte'));
+	const Privacy = lazy(() => import('./routes/Privacy.svelte'));
+
 	import { fade } from 'svelte/transition';
 	
 	export let url = "";
@@ -97,6 +101,8 @@
 			<Route path="/contracts" component={Contracts} />
 			<Route path="/contract/:id" component={ContractDetails} />
 			<Route path="/new-contract" component={NewContract} />
+			<Route path="/terms" component={Terms} />
+			<Route path="/privacy" component={Privacy} />
 		  </div>
 		</main>
 		<Footer />
