@@ -1,7 +1,6 @@
 <script>
   import { navigate } from 'svelte-routing';
   import { pb } from '../services/pocketbase';
-  import { ensureWalletExists } from '../services/WalletService';
 
   let email = '';
   let password = '';
@@ -9,17 +8,7 @@
 
   async function login() {
       try {
-          const authData = await pb.collection('users').authWithPassword(email, password);
-          
-          // Check and create wallet if necessary
-          try {
-              await ensureWalletExists(authData.record.id);
-          } catch (walletError) {
-              // Optionally, you can show a warning to the user here
-              // but still allow them to proceed
-              error = walletError.message;
-          }
-
+          await pb.collection('users').authWithPassword(email, password);
           navigate('/');
       } catch (userError) {
           error = userError.message;
