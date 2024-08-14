@@ -1,2 +1,2 @@
 import PocketBase from 'pocketbase';
-export const pb = new PocketBase('https//back.grably.us:8090');
+export const pb = new PocketBase('https//back.grably.us');
