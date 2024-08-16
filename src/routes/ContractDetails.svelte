@@ -12,12 +12,10 @@
   let dataBatches = [];
   let totalFilesUploaded = 0;
   let userFilesUploaded = 0;
-  let editMode = false;
-  let editedContract = {};
-  let newThumbnail = null;
   let error = null;
   let individualContribution = 0;
   let totalContribution = 0;
+  let isContractCreator = false;
 
   onMount(async () => {
     await loadContract();
@@ -29,7 +27,7 @@
         expand: 'creator,DataBatch_via_contract.DataPoint_via_batch'
       });
 
-      editedContract = { ...contract };
+      isContractCreator = contract.creator === pb.authStore.model.id;
 
       if (contract.expand && contract.expand['DataBatch_via_contract']) {
         dataBatches = contract.expand['DataBatch_via_contract'];
@@ -165,10 +163,17 @@
     
     <div class="bg-white shadow-md rounded-lg p-6 mb-6">
       <p class="mb-4">{@html contract.description}</p>
-      <p class="mb-2"><strong>Status:</strong> {contract.status}</p>
+      <p class="mb-2"><strong>Status:</strong> Active</p>
       <p class="mb-2"><strong>Deadline:</strong> {formatDate(contract.deadline)}</p>
-      <p class="mb-2"><strong>Amount Requested:</strong> ${contract.amount_requested}</p>
-      <p class="mb-2"><strong>Price Per Point:</strong> ${contract.price_per_point}</p>
+      <p class="mb-2 flex items-center">
+        <strong>Amount Requested:</strong> 
+        {contract.amount_requested}
+      </p>
+      <p class="mb-2 flex items-center">
+        <strong>Price Per Point:</strong> 
+        <img src="/grably-icon.png" alt="Grably icon" class="inline-block w-4 h-4 mx-1" />
+        {contract.price_per_point}
+      </p>
       <p class="mb-2"><strong>Creator:</strong> {contract.expand?.creator?.name || 'Unknown'}</p>
       
       <div class="mt-6">
@@ -195,18 +200,18 @@
         </div>
 
         {#if pb.authStore.model?.role === 'DataProvider' || pb.authStore.model?.role === 'Admin'}
-        <h2 class="text-xl font-semibold mb-4">Upload Files</h2>
-        <input 
-          type="file" 
-          multiple 
-          bind:this={fileInput} 
-          accept=".wav,.mp3,.mp4,.png,.heic,.jpg,.jpeg"
-          class="mb-4"
-        >
-        <button on:click={handleFileUpload} class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-          Upload Files
-        </button>
-      {/if}
+          <h2 class="text-xl font-semibold mb-4">Upload Files</h2>
+          <input 
+            type="file" 
+            multiple 
+            bind:this={fileInput} 
+            accept=".wav,.mp3,.mp4,.png,.heic,.jpg,.jpeg"
+            class="mb-4"
+          >
+          <button on:click={handleFileUpload} class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+            Upload Files
+          </button>
+        {/if}
         {#if uploadStatus}
           <p class="mt-2 {uploadStatus.includes('failed') ? 'text-red-500' : 'text-green-500'}">
             {uploadStatus}
@@ -230,27 +235,29 @@
       </div>
     </div>
 
-    <div class="bg-white shadow-md rounded-lg p-6">
-      <h2 class="text-xl font-semibold mb-4">Uploaded Batches</h2>
-      {#if dataBatches.length > 0}
-        <ul class="space-y-4">
-          {#each dataBatches as batch}
-            <li class="border-b pb-4 {getStatusColor(batch.status)}">
-              <p><strong>Batch ID:</strong> {batch.id}</p>
-              <p><strong>Status:</strong> {batch.status}</p>
-              <p><strong>Description:</strong> {batch.description}</p>
-              <p><strong>Created:</strong> {formatDate(batch.created)}</p>
-              <p><strong>Files in Batch:</strong> {batch.expand?.['DataPoint_via_batch']?.length || 0}</p>
-              {#if batch.status === 'rejected' && batch.rejection_reason}
-                <p class="text-red-600"><strong>Rejection Reason:</strong> {batch.rejection_reason}</p>
-              {/if}
-            </li>
-          {/each}
-        </ul>
-      {:else}
-        <p>No data batches uploaded yet.</p>
-      {/if}
-    </div>
+    {#if isContractCreator}
+      <div class="bg-white shadow-md rounded-lg p-6">
+        <h2 class="text-xl font-semibold mb-4">Uploaded Batches</h2>
+        {#if dataBatches.length > 0}
+          <ul class="space-y-4">
+            {#each dataBatches as batch}
+              <li class="border-b pb-4 {getStatusColor(batch.status)}">
+                <p><strong>Batch ID:</strong> {batch.id}</p>
+                <p><strong>Status:</strong> {batch.status}</p>
+                <p><strong>Description:</strong> {batch.description}</p>
+                <p><strong>Created:</strong> {formatDate(batch.created)}</p>
+                <p><strong>Files in Batch:</strong> {batch.expand?.['DataPoint_via_batch']?.length || 0}</p>
+                {#if batch.status === 'rejected' && batch.rejection_reason}
+                  <p class="text-red-600"><strong>Rejection Reason:</strong> {batch.rejection_reason}</p>
+                {/if}
+              </li>
+            {/each}
+          </ul>
+        {:else}
+          <p>No data batches uploaded yet.</p>
+        {/if}
+      </div>
+    {/if}
   {:else}
     <p>Loading contract details...</p>
   {/if}

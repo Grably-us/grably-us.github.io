@@ -1,5 +1,5 @@
 <script>
-	import { Router, Route } from "svelte-routing";
+	import { Router, Route, navigate } from "svelte-routing";
 	import { pb } from './services/pocketbase';
 	import { onMount } from 'svelte';
 	import Home from "./routes/Home.svelte";
@@ -37,6 +37,9 @@
 				if (user.wallet) {
 					const wallet = await pb.collection('Wallet').getOne(user.wallet);
 					walletBalance = wallet.token_balance;
+				}
+				if (user.role === 'DataProvider' && window.location.pathname === '/') {
+					navigate('/contracts');
 				}
 			}
 		} catch (err) {
@@ -98,10 +101,14 @@
 				<div class="max-w-7xl mx-auto">
 					{#key segment}
 						<div in:fade={{ duration: 300, delay: 300 }} out:fade={{ duration: 300 }}>
-							<Route path="/" component={Home} />
+							{#if userRole !== 'DataProvider'}
+								<Route path="/" component={Home} />
+							{/if}
 							<Route path="/contracts" component={Contracts} />
 							<Route path="/contract/:id" component={ContractDetails} />
-							<Route path="/new-contract" component={NewContract} />
+							{#if userRole !== 'DataProvider'}
+								<Route path="/new-contract" component={NewContract} />
+							{/if}
 							<Route path="/terms" component={Terms} />
 							<Route path="/privacy" component={Privacy} />
 						</div>
@@ -114,6 +121,7 @@
 		{/if}
 	</div>
 </Router>
+
 
 <style>
 	:global(body) {

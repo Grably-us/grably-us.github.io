@@ -5,14 +5,17 @@
   let email = '';
   let password = '';
   let error = '';
+  export let onLoginSuccess; 
 
   async function login() {
-      try {
-          await pb.collection('users').authWithPassword(email, password);
-          navigate('/');
-      } catch (userError) {
-          error = userError.message;
+    try {
+      const authData = await pb.collection('users').authWithPassword(email, password);
+      if (authData) {
+        onLoginSuccess(authData.record); 
       }
+    } catch (userError) {
+      error = userError.message;
+    }
   }
 </script>
 
