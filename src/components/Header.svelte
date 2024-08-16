@@ -90,14 +90,9 @@
           alt="GRABLY"
         >
       </a>
-      <a 
-      href="/contracts" 
-      on:click|preventDefault
-      class="nav-button" 
-      class:active={segment === 'contracts'}
-    >
-      Available Tasks
-    </a>
+      <a href="/contracts" use:link class="nav-button" class:active={segment === 'contracts'}>
+        Available Tasks
+      </a>
     </div>
     
     <div class="flex items-center space-x-6">
