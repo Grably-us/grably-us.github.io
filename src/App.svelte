@@ -92,8 +92,7 @@
 	  {/if}
   
 	  {#if isAuthenticated}
-		<Header {userRole} {user} {walletBalance} {segment} on:profileUpdate={handleProfileUpdate} />
-		<main class="flex-grow p-6 bg-gray-50 mt-14">
+	  <Header {userRole} {user} {walletBalance} {segment} on:profileUpdate={handleProfileUpdate} />		<main class="flex-grow p-6 bg-gray-50 mt-14">
 		  <div class="max-w-7xl mx-auto">
 			<Route path="/" component={Home} />
 			<Route path="/contracts" component={Contracts} />

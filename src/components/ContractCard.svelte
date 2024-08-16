@@ -21,11 +21,11 @@
     }
   
     function getThumbnailUrl(contract) {
-      if (contract.thumbnail) {
-        return pb.files.getUrl(contract, contract.thumbnail);
-      }
-      return 'my-grably-app/public/icon.webp'; // Update this path to your default image
+    if (contract?.thumbnail) {
+      return pb.files.getUrl(contract, contract.thumbnail);
     }
+    return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" fill="#f0f0f0"/><text x="50%" y="50%" font-family="Arial" font-size="14" fill="#999" dominant-baseline="middle" text-anchor="middle">No Image</text></svg>');
+  }
   
     function formatDate(dateString) {
       return new Date(dateString).toLocaleDateString();

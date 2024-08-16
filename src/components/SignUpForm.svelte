@@ -33,11 +33,14 @@
         agreed_policy: agreePolicy
       };
       
-      await pb.collection('users').create(userData);
+      const createdUser = await pb.collection('users').create(userData);
       
-      // Log the user in
-      await pb.collection('users').authWithPassword(email, password);
-      navigate('/');
+      if (createdUser) {
+        // Login after successful signup
+        await login(email, password);
+      } else {
+        error = "Failed to create user. Please try again.";
+      }
     } catch (e) {
       console.error('Signup error:', e);
       if (e.data && e.data.data) {
@@ -45,8 +48,22 @@
           .map(([key, value]) => `${key}: ${value.message}`)
           .join(', ');
       } else {
-        error = e.message;
+        error = e.message || "An unexpected error occurred. Please try again.";
       }
+    }
+  }
+
+  async function login(email, password) {
+    try {
+      const authData = await pb.collection('users').authWithPassword(email, password);
+      if (authData) {
+        navigate('/');
+      } else {
+        error = "Login failed after signup. Please try logging in manually.";
+      }
+    } catch (e) {
+      console.error('Login error:', e);
+      error = "Login failed after signup. Please try logging in manually.";
     }
   }
 </script>

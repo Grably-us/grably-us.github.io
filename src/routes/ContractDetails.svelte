@@ -39,8 +39,7 @@
 
       calculateStats();
     } catch (err) {
-      alert('Error fetching wallet contract');
-      error = err.message;
+      error = `Error fetching contract: ${err.message}`;
     }
   }
   
@@ -133,7 +132,7 @@
     if (contract?.thumbnail) {
       return pb.files.getUrl(contract, contract.thumbnail);
     }
-    return 'my-grably-app/public/icon.webp';
+    return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" fill="#f0f0f0"/><text x="50%" y="50%" font-family="Arial" font-size="14" fill="#999" dominant-baseline="middle" text-anchor="middle">No Image</text></svg>');
   }
   
   function getStatusColor(status) {
@@ -241,7 +240,7 @@
               <p><strong>Status:</strong> {batch.status}</p>
               <p><strong>Description:</strong> {batch.description}</p>
               <p><strong>Created:</strong> {formatDate(batch.created)}</p>
-              <p><strong>Files in Batch:</strong> {batch.expand['DataPoint_via_batch']?.length || 0}</p>
+              <p><strong>Files in Batch:</strong> {batch.expand?.['DataPoint_via_batch']?.length || 0}</p>
               {#if batch.status === 'rejected' && batch.rejection_reason}
                 <p class="text-red-600"><strong>Rejection Reason:</strong> {batch.rejection_reason}</p>
               {/if}
@@ -252,5 +251,7 @@
         <p>No data batches uploaded yet.</p>
       {/if}
     </div>
+  {:else}
+    <p>Loading contract details...</p>
   {/if}
 </div>

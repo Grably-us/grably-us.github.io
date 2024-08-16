@@ -4,14 +4,34 @@
   import { onMount } from 'svelte';
   import Profile from './Profile.svelte';
   import { fade } from 'svelte/transition';
+  import { ensureWalletExists } from '../services/WalletService';
 
   export let userRole;
   export let segment;
   export let user;
-  export let walletBalance;
+  export let walletBalance = 0;
 
   let showProfile = false;
-  let loading = false;
+  let loading = true;
+  let error = null;
+
+  onMount(async () => {
+    if (pb.authStore.isValid) {
+      try {
+        const userId = pb.authStore.model.id;
+        const wallet = await ensureWalletExists(userId);
+        walletBalance = wallet.token_balance;
+        user = pb.authStore.model;
+      } catch (err) {
+        console.error('Error fetching wallet:', err);
+        error = 'Unable to fetch wallet information. Please try refreshing the page.';
+      } finally {
+        loading = false;
+      }
+    } else {
+      loading = false;
+    }
+  });
 
   function toggleProfile() {
     showProfile = !showProfile;
@@ -57,7 +77,11 @@
       </a>
     </nav>
     
-    {#if !loading && user}
+    {#if loading}
+      <p>Loading...</p>
+    {:else if error}
+      <p class="text-red-300">{error}</p>
+    {:else if user}
       <button
         type="button"
         class="flex items-center space-x-2 bg-white bg-opacity-20 rounded-full px-3 py-1 hover:bg-opacity-30 transition-colors duration-200 flex-shrink-0"
