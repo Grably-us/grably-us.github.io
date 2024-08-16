@@ -23,11 +23,12 @@
 	let error = null;
     let segment = '';
 
-  $: {
-    if (typeof window !== 'undefined') {
-      segment = window.location.pathname.split('/')[1];
-    }
-  }
+	$: {
+		if (typeof window !== 'undefined') {
+			segment = window.location.pathname.split('/')[1];
+		}
+	}
+
 	onMount(async () => {
 		try {
 			loading = true;
@@ -75,39 +76,44 @@
 		}, 5000);
 	}
 </script>
+
 <Router {url} basepath={base}>
 	<div class="min-h-screen flex flex-col">
-	  {#if loading}
-		<div class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
-		  <div class="bg-white p-4 rounded-lg shadow-lg">
-			<p class="text-lg font-semibold">Loading...</p>
-		  </div>
-		</div>
-	  {/if}
-  
-	  {#if error}
-		<div class="fixed top-0 left-0 right-0 bg-red-500 text-white p-4 text-center z-50" transition:fade>
-		  <p>{error}</p>
-		</div>
-	  {/if}
-  
-	  {#if isAuthenticated}
-	  <Header {userRole} {user} {walletBalance} {segment} on:profileUpdate={handleProfileUpdate} />		<main class="flex-grow p-6 bg-gray-50 mt-14">
-		  <div class="max-w-7xl mx-auto">
-			<Route path="/" component={Home} />
-			<Route path="/contracts" component={Contracts} />
-			<Route path="/contract/:id" component={ContractDetails} />
-			<Route path="/new-contract" component={NewContract} />
-			<Route path="/terms" component={Terms} />
-			<Route path="/privacy" component={Privacy} />
-		  </div>
-		</main>
-		<Footer />
-	  {:else}
-		<Route path="*" component={Login} />
-	  {/if}
+		{#if loading}
+			<div class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+				<div class="bg-white p-4 rounded-lg shadow-lg">
+					<p class="text-lg font-semibold">Loading...</p>
+				</div>
+			</div>
+		{/if}
+	
+		{#if error}
+			<div class="fixed top-0 left-0 right-0 bg-red-500 text-white p-4 text-center z-50" transition:fade>
+				<p>{error}</p>
+			</div>
+		{/if}
+		{#if isAuthenticated}
+			<Header {userRole} {user} {walletBalance} {segment} on:profileUpdate={handleProfileUpdate} />
+			<main class="flex-grow p-6 bg-gray-50 mt-16">
+				<div class="max-w-7xl mx-auto">
+					{#key segment}
+						<div in:fade={{ duration: 300, delay: 300 }} out:fade={{ duration: 300 }}>
+							<Route path="/" component={Home} />
+							<Route path="/contracts" component={Contracts} />
+							<Route path="/contract/:id" component={ContractDetails} />
+							<Route path="/new-contract" component={NewContract} />
+							<Route path="/terms" component={Terms} />
+							<Route path="/privacy" component={Privacy} />
+						</div>
+					{/key}
+				</div>
+			</main>
+			<Footer />
+		{:else}
+			<Route path="*" component={Login} />
+		{/if}
 	</div>
-  </Router>
+</Router>
 
 <style>
 	:global(body) {

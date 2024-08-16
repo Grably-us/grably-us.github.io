@@ -111,7 +111,4 @@
     </div>
     <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Sign Up</button>
   </form>
-  <div class="mt-4 text-center">
-    <Link to="/login" class="text-blue-500 hover:underline">Already have an account? Log in</Link>
-  </div>
 </div>

@@ -26,14 +26,14 @@
 </script>
 
 <div class="container mx-auto px-4">
-  <h1 class="text-3xl font-bold mb-6">Contracts</h1>
+  <h1 class="text-3xl font-bold mb-6">Available Tasks:</h1>
 
   {#if loading}
     <p class="text-center">Loading contracts...</p>
   {:else if error}
     <p class="text-red-500 text-center">{error}</p>
   {:else if contracts.length === 0}
-    <p class="text-center">No contracts found.</p>
+    <p class="text-center">No tasks found.</p>
   {:else}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {#each contracts as contract (contract.id)}
