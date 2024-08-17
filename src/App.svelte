@@ -15,9 +15,9 @@
 	
 	export let url = "";
 	const base = '';
-	let isAuthenticated = pb.authStore.isValid;
-	let userRole = pb.authStore.model?.role || '';
-	let user = pb.authStore.model;
+	let isAuthenticated = false;
+	let userRole = '';
+	let user = null;
 	let walletBalance = 0;
 	let loading = true;
 	let error = null;
@@ -34,11 +34,13 @@
 			loading = true;
 			if (pb.authStore.isValid) {
 				user = pb.authStore.model;
+				userRole = user.role;
+				isAuthenticated = true;
 				if (user.wallet) {
 					const wallet = await pb.collection('Wallet').getOne(user.wallet);
 					walletBalance = wallet.token_balance;
 				}
-				if (user.role === 'DataProvider' && window.location.pathname === '/') {
+				if (userRole === 'DataProvider' && window.location.pathname === '/') {
 					navigate('/contracts');
 				}
 			}
@@ -62,7 +64,7 @@
 				const wallet = await pb.collection('Wallet').getOne(user.wallet);
 				walletBalance = wallet.token_balance;
 			} catch (err) {
-				alert('Error fetching wallet balance');
+				error = 'Error fetching wallet balance';
 			}
 		}
 	}
@@ -88,14 +90,11 @@
 					<p class="text-lg font-semibold">Loading...</p>
 				</div>
 			</div>
-		{/if}
-	
-		{#if error}
+		{:else if error}
 			<div class="fixed top-0 left-0 right-0 bg-red-500 text-white p-4 text-center z-50" transition:fade>
 				<p>{error}</p>
 			</div>
-		{/if}
-		{#if isAuthenticated}
+		{:else if isAuthenticated}
 			<Header {userRole} {user} {walletBalance} {segment} on:profileUpdate={handleProfileUpdate} />
 			<main class="flex-grow p-6 bg-gray-50 mt-16">
 				<div class="max-w-7xl mx-auto">
@@ -121,7 +120,6 @@
 		{/if}
 	</div>
 </Router>
-
 
 <style>
 	:global(body) {

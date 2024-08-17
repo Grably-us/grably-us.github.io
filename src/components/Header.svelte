@@ -16,12 +16,14 @@
   let error = null;
 
   onMount(async () => {
+    loading = true;
     if (pb.authStore.isValid) {
       try {
         const userId = pb.authStore.model.id;
         const wallet = await ensureWalletExists(userId);
         walletBalance = wallet.token_balance;
         user = pb.authStore.model;
+        userRole = user.role;
       } catch (err) {
         console.error('Error fetching wallet:', err);
         error = 'Unable to fetch wallet information. Please try refreshing the page.';
@@ -72,80 +74,87 @@
   }
 </script>
 
-<header class="fixed top-0 left-0 right-0 bg-white shadow-md text-gray-800 p-4 z-10" style="box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); height: 72px;">
-  <div class="container mx-auto flex justify-between items-center h-full">
-    <div class="flex items-center">
-      {#if userRole !== 'DataProvider'}
-      <a href="/" use:link class="flex-shrink-0 mr-6">
+{#if loading}
+  <header class="fixed top-0 left-0 right-0 bg-white shadow-md text-gray-800 p-4 z-10" style="box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); height: 72px;">
+    <div class="container mx-auto flex justify-between items-center h-full">
+      <div class="flex items-center">
+        <!-- Placeholder for logo -->
+        <div class="w-28 h-10 bg-gray-200 rounded"></div>
+      </div>
+      <div class="flex items-center space-x-6">
+        <!-- Placeholder for buttons -->
+        <div class="w-24 h-8 bg-gray-200 rounded"></div>
+        <div class="w-24 h-8 bg-gray-200 rounded"></div>
+      </div>
+    </div>
+  </header>
+{:else}
+  <header class="fixed top-0 left-0 right-0 bg-white shadow-md text-gray-800 p-4 z-10" style="box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); height: 72px;">
+    <div class="container mx-auto flex justify-between items-center h-full">
+      <div class="flex items-center">
+        {#if userRole !== 'DataProvider'}
+        <a href="/" use:link class="flex-shrink-0 mr-6">
+          <img 
+            class="t228__imglogo t228__imglogomobile" 
+            src="https://static.tildacdn.one/tild3863-3133-4538-a263-356134623965/Group_29.svg" 
+            style="max-width: 110px; width: 110px; min-width: 110px; height: auto; display: block;" 
+            alt="GRABLY LOGO"
+          >
+        </a>
+        {:else}
         <img 
           class="t228__imglogo t228__imglogomobile" 
           src="https://static.tildacdn.one/tild3863-3133-4538-a263-356134623965/Group_29.svg" 
           style="max-width: 110px; width: 110px; min-width: 110px; height: auto; display: block;" 
           alt="GRABLY LOGO"
         >
-      </a>
-      {:else}
-      <img 
-        class="t228__imglogo t228__imglogomobile" 
-        src="https://static.tildacdn.one/tild3863-3133-4538-a263-356134623965/Group_29.svg" 
-        style="max-width: 110px; width: 110px; min-width: 110px; height: auto; display: block;" 
-        alt="GRABLY LOGO"
-      >
-      {/if}
-      <a href="/contracts" use:link class="nav-button ml-1">
-        Available Tasks
-      </a>
-    </div>
-    
-    <div class="flex items-center space-x-6">
-      {#if userRole !== 'DataProvider'}
-        <a
-          href="/new-contract"
-          use:link
-          class="nav-button"
-          class:active={segment === 'new-contract'}
-        >
-          Post a Request
-        </a>
-      {/if}
-      
-      <div class="profile-button-container">
-        {#if loading}
-          <div class="profile-button skeleton">
-            <div class="w-8 h-8 rounded-full bg-gray-200"></div>
-            <div class="text-left mx-2">
-              <div class="w-20 h-4 bg-gray-200 rounded mb-1"></div>
-              <div class="w-16 h-3 bg-gray-200 rounded"></div>
-            </div>
-            <div class="w-24 h-5 bg-gray-200 rounded-full"></div>
-          </div>
-        {:else if error}
-          <p class="text-red-500">{error}</p>
-        {:else if user}
-          <button
-            type="button"
-            class="profile-button {getRoleBorderColor(user.role)}"
-            on:click={toggleProfile}
-          >
-            <img
-              src={getAvatarUrl(user)}
-              alt="User avatar"
-              class="w-8 h-8 rounded-full"
-            />
-            <div class="text-left mx-2">
-              <p class="font-semibold text-sm">{user.name || 'User'}</p>
-              <p class="text-xs text-gray-600 flex items-center">
-                <img src="/grably-icon.png" alt="Grably icon" class="inline-block w-4 h-4 mr-1" />
-                {Math.floor(walletBalance)}
-              </p>
-            </div>
-            <span class="text-xs bg-gray-200 px-2 py-1 rounded-full">{getRoleLabel(user.role)}</span>
-          </button>
         {/if}
+        <a href="/contracts" use:link class="nav-button ml-1">
+          Available Tasks
+        </a>
+      </div>
+      
+      <div class="flex items-center space-x-6">
+        {#if userRole !== 'DataProvider'}
+          <a
+            href="/new-contract"
+            use:link
+            class="nav-button"
+            class:active={segment === 'new-contract'}
+          >
+            Post a Request
+          </a>
+        {/if}
+        
+        <div class="profile-button-container">
+          {#if error}
+            <p class="text-red-500">{error}</p>
+          {:else if user}
+            <button
+              type="button"
+              class="profile-button {getRoleBorderColor(user.role)}"
+              on:click={toggleProfile}
+            >
+              <img
+                src={getAvatarUrl(user)}
+                alt="User avatar"
+                class="w-8 h-8 rounded-full"
+              />
+              <div class="text-left mx-2">
+                <p class="font-semibold text-sm">{user.name || 'User'}</p>
+                <p class="text-xs text-gray-600 flex items-center">
+                  <img src="/grably-icon.png" alt="Grably icon" class="inline-block w-4 h-4 mr-1" />
+                  {Math.floor(walletBalance)}
+                </p>
+              </div>
+              <span class="text-xs bg-gray-200 px-2 py-1 rounded-full">{getRoleLabel(user.role)}</span>
+            </button>
+          {/if}
+        </div>
       </div>
     </div>
-  </div>
-</header>
+  </header>
+{/if}
 
 {#if showProfile}
   <div transition:fade>
