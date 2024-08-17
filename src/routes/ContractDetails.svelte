@@ -1,7 +1,6 @@
 <script>
   import { pb } from '../services/pocketbase';
   import { onMount } from 'svelte';
-  import SvelteMarkdown from 'svelte-markdown'
   export let id; 
   import MarkdownRenderer from '../components/MarkdownRenderer.svelte';
   import { Link } from 'svelte-routing';
