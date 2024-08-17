@@ -1,9 +1,10 @@
 <script>
   import { pb } from '../services/pocketbase';
   import { onMount } from 'svelte';
-
-  export let id; // Contract ID passed as a parameter
-
+  import SvelteMarkdown from 'svelte-markdown'
+  export let id; 
+  import MarkdownRenderer from '../components/MarkdownRenderer.svelte';
+  import { Link } from 'svelte-routing';
   let contract = null;
   let fileInput;
   let uploadStatus = '';
@@ -142,7 +143,6 @@
       default: return 'bg-gray-100';
     }
   }
-
   $: progressPercentage = (totalContribution / (contract?.amount_requested || 1)) * 100 || 0;
   $: individualProgressPercentage = (individualContribution / (contract?.amount_requested || 1)) * 100 || 0;
   $: remainingFiles = (contract?.amount_requested || 0) - totalFilesUploaded;
@@ -153,16 +153,23 @@
     <p class="text-red-500">{error}</p>
   {:else if contract}
     <div class="flex items-center mb-6">
+      <Link to="/contracts" class="mr-4">
+        <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center shadow-inner">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="white" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </div>
+      </Link>
       <img 
         src={getThumbnailUrl(contract)} 
         alt="Contract thumbnail" 
-        class="w-24 h-24 object-cover rounded-full mr-4"
+        class="w-24 h-24 object-cover rounded-full ml-4"
       />
-      <h1 class="text-3xl font-bold">{contract.title}</h1>
+      <h1 class="text-3xl font-bold ml-4">{contract.title}</h1>
     </div>
     
     <div class="bg-white shadow-md rounded-lg p-6 mb-6">
-      <p class="mb-4">{@html contract.description}</p>
+      <MarkdownRenderer htmlContent={contract.description} />
       <p class="mb-2"><strong>Status:</strong> Active</p>
       <p class="mb-2"><strong>Deadline:</strong> {formatDate(contract.deadline)}</p>
       <p class="mb-2 flex items-center">
