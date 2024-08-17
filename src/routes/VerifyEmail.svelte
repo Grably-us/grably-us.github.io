@@ -21,6 +21,9 @@
       } catch (error) {
         console.error('Verification error:', error);
         verificationStatus = `Verification failed: ${error.message}`;
+        if (error.data?.data?.token) {
+          verificationStatus += ` (${error.data.data.token})`;
+        }
       }
     });
   </script>

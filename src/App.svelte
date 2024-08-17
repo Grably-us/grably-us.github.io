@@ -14,7 +14,9 @@
 	import { fade } from 'svelte/transition';
 	import VerifyEmail from "./routes/VerifyEmail.svelte";
 	import CheckEmail from "./routes/CheckEmail.svelte";
-	
+	import TaskList from "./routes/TaskList.svelte";
+    import TaskCreation from "./routes/TaskCreation.svelte";
+  
 	export let url = "";
 	const base = '';
 	let isAuthenticated = false;
@@ -86,44 +88,51 @@
 
 <Router {url} basepath={base}>
 	<div class="min-h-screen flex flex-col">
-		{#if loading}
-			<div class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
-				<div class="bg-white p-4 rounded-lg shadow-lg">
-					<p class="text-lg font-semibold">Loading...</p>
-				</div>
-			</div>
-		{:else if error}
-			<div class="fixed top-0 left-0 right-0 bg-red-500 text-white p-4 text-center z-50" transition:fade>
-				<p>{error}</p>
-			</div>
-		{:else if isAuthenticated}
-			<Header {userRole} {user} {walletBalance} {segment} on:profileUpdate={handleProfileUpdate} />
-			<main class="flex-grow p-6 bg-gray-50 mt-16">
-				<div class="max-w-7xl mx-auto">
-					{#key segment}
-						<div in:fade={{ duration: 300, delay: 300 }} out:fade={{ duration: 300 }}>
-							{#if userRole !== 'DataProvider'}
-								<Route path="/" component={Home} />
-							{/if}
-							<Route path="/contracts" component={Contracts} />
-							<Route path="/contract/:id" component={ContractDetails} />
-							{#if userRole !== 'DataProvider'}
-								<Route path="/new-contract" component={NewContract} />
-							{/if}
-							<Route path="/terms" component={Terms} />
-							<Route path="/privacy" component={Privacy} />
-						</div>
-					{/key}
-				</div>
-			</main>
-			<Footer />
-		{:else}
-			<Route path="/verify-email" component={VerifyEmail} />
-			<Route path="/check-email" component={CheckEmail} />
-			<Route path="*" component={Login} />
-		{/if}
+	  {#if loading}
+		<div class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+		  <div class="bg-white p-4 rounded-lg shadow-lg">
+			<p class="text-lg font-semibold">Loading...</p>
+		  </div>
+		</div>
+	  {:else if error}
+		<div class="fixed top-0 left-0 right-0 bg-red-500 text-white p-4 text-center z-50" transition:fade>
+		  <p>{error}</p>
+		</div>
+	  {:else if isAuthenticated}
+		<Header {userRole} {user} {walletBalance} {segment} on:profileUpdate={handleProfileUpdate} />
+		<main class="flex-grow p-6 bg-gray-50 mt-16">
+		  <div class="max-w-7xl mx-auto">
+			{#key segment}
+			  <div in:fade={{ duration: 300, delay: 300 }} out:fade={{ duration: 300 }}>
+				{#if userRole !== 'DataProvider'}
+				  <Route path="/" component={Home} />
+				{/if}
+				<Route path="/contracts" component={Contracts} />
+				<Route path="/contract/:id" component={ContractDetails} />
+				{#if userRole !== 'DataProvider'}
+				  <Route path="/new-contract" component={NewContract} />
+				{/if}
+				{#if userRole === 'Admin'}
+				  <Route path="/tasks" component={TaskList} />
+				  <Route path="/create-task" component={TaskCreation} />
+				  <Route path="/edit-task/:id" let:params>
+					<TaskCreation id={params.id} />
+				  </Route>
+				{/if}
+				<Route path="/terms" component={Terms} />
+				<Route path="/privacy" component={Privacy} />
+			  </div>
+			{/key}
+		  </div>
+		</main>
+		<Footer />
+	  {:else}
+		<Route path="/verify-email" component={VerifyEmail} />
+		<Route path="/check-email" component={CheckEmail} />
+		<Route path="*" component={Login} />
+	  {/if}
 	</div>
-</Router>
+  </Router>
 
 <style>
 	:global(body) {

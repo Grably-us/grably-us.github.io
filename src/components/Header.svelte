@@ -89,71 +89,81 @@
     </div>
   </header>
 {:else}
-  <header class="fixed top-0 left-0 right-0 bg-white shadow-md text-gray-800 p-4 z-10" style="box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); height: 72px;">
-    <div class="container mx-auto flex justify-between items-center h-full">
-      <div class="flex items-center">
-        {#if userRole !== 'DataProvider'}
-        <a href="/" use:link class="flex-shrink-0 mr-6">
-          <img 
-            class="t228__imglogo t228__imglogomobile" 
-            src="https://static.tildacdn.one/tild3863-3133-4538-a263-356134623965/Group_29.svg" 
-            style="max-width: 110px; width: 110px; min-width: 110px; height: auto; display: block;" 
-            alt="GRABLY LOGO"
-          >
-        </a>
-        {:else}
+<header class="fixed top-0 left-0 right-0 bg-white shadow-md text-gray-800 p-4 z-10" style="box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); height: 72px;">
+  <div class="container mx-auto flex justify-between items-center h-full">
+    <div class="flex items-center">
+      {#if userRole !== 'DataProvider'}
+      <a href="/" use:link class="flex-shrink-0 mr-6">
         <img 
           class="t228__imglogo t228__imglogomobile" 
           src="https://static.tildacdn.one/tild3863-3133-4538-a263-356134623965/Group_29.svg" 
           style="max-width: 110px; width: 110px; min-width: 110px; height: auto; display: block;" 
           alt="GRABLY LOGO"
         >
-        {/if}
-        <a href="/contracts" use:link class="nav-button ml-1">
-          Available Tasks
+      </a>
+      {:else}
+      <img 
+        class="t228__imglogo t228__imglogomobile" 
+        src="https://static.tildacdn.one/tild3863-3133-4538-a263-356134623965/Group_29.svg" 
+        style="max-width: 110px; width: 110px; min-width: 110px; height: auto; display: block;" 
+        alt="GRABLY LOGO"
+      >
+      {/if}
+      <a href="/contracts" use:link class="nav-button ml-1">
+        Available Tasks
+      </a>
+    </div>
+    
+    <div class="flex items-center space-x-6">
+      {#if userRole !== 'DataProvider'}
+        <a
+          href="/new-contract"
+          use:link
+          class="nav-button"
+          class:active={segment === 'new-contract'}
+        >
+          Post a Request
         </a>
-      </div>
+      {/if}
+      {#if userRole === 'Admin'}
+        <a
+          href="/tasks"
+          use:link
+          class="nav-button"
+          class:active={segment === 'tasks'}
+        >
+          Manage Tasks
+        </a>
+      {/if}
       
-      <div class="flex items-center space-x-6">
-        {#if userRole !== 'DataProvider'}
-          <a
-            href="/new-contract"
-            use:link
-            class="nav-button"
-            class:active={segment === 'new-contract'}
+      <div class="profile-button-container">
+        {#if error}
+          <p class="text-red-500">{error}</p>
+        {:else if user}
+          <button
+            type="button"
+            class="profile-button {getRoleBorderColor(user.role)}"
+            on:click={toggleProfile}
           >
-            Post a Request
-          </a>
+            <img
+              src={getAvatarUrl(user)}
+              alt="User avatar"
+              class="w-8 h-8 rounded-full"
+            />
+            <div class="text-left mx-2">
+              <p class="font-semibold text-sm">{user.name || 'User'}</p>
+              <p class="text-xs text-gray-600 flex items-center">
+                <img src="/grably-icon.png" alt="Grably icon" class="inline-block w-4 h-4 mr-1" />
+                {Math.floor(walletBalance)}
+              </p>
+            </div>
+            <span class="text-xs bg-gray-200 px-2 py-1 rounded-full">{getRoleLabel(user.role)}</span>
+          </button>
         {/if}
-        
-        <div class="profile-button-container">
-          {#if error}
-            <p class="text-red-500">{error}</p>
-          {:else if user}
-            <button
-              type="button"
-              class="profile-button {getRoleBorderColor(user.role)}"
-              on:click={toggleProfile}
-            >
-              <img
-                src={getAvatarUrl(user)}
-                alt="User avatar"
-                class="w-8 h-8 rounded-full"
-              />
-              <div class="text-left mx-2">
-                <p class="font-semibold text-sm">{user.name || 'User'}</p>
-                <p class="text-xs text-gray-600 flex items-center">
-                  <img src="/grably-icon.png" alt="Grably icon" class="inline-block w-4 h-4 mr-1" />
-                  {Math.floor(walletBalance)}
-                </p>
-              </div>
-              <span class="text-xs bg-gray-200 px-2 py-1 rounded-full">{getRoleLabel(user.role)}</span>
-            </button>
-          {/if}
-        </div>
       </div>
     </div>
-  </header>
+  </div>
+</header>
 {/if}
 
 {#if showProfile}
