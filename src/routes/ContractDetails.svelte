@@ -242,7 +242,7 @@
     </div>
 
     {#if isContractCreator}
-      <div class="bg-white shadow-md rounded-lg p-6">
+      <div class="bg-white shadow-md rounded-lg p-6 mt-6">
         <h2 class="text-xl font-semibold mb-4">Uploaded Batches</h2>
         {#if dataBatches.length > 0}
           <ul class="space-y-4">
@@ -256,6 +256,9 @@
                 {#if batch.status === 'rejected' && batch.rejection_reason}
                   <p class="text-red-600"><strong>Rejection Reason:</strong> {batch.rejection_reason}</p>
                 {/if}
+                <Link to={`/batch/${batch.id}`} class="text-blue-500 hover:underline">
+                  Review Batch
+                </Link>
               </li>
             {/each}
           </ul>

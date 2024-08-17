@@ -16,7 +16,8 @@
 	import CheckEmail from "./routes/CheckEmail.svelte";
 	import TaskList from "./routes/TaskList.svelte";
     import TaskCreation from "./routes/TaskCreation.svelte";
-  
+    import BatchDetails from "./components/BatchDetails.svelte";
+
 	export let url = "";
 	const base = '';
 	let isAuthenticated = false;
@@ -73,6 +74,10 @@
 		}
 	}
 
+	function catchAllRedirect() {
+    navigate("/contracts", { replace: true });
+  }
+
 	function handleProfileUpdate(event) {
 		user = event.detail.user;
 		walletBalance = event.detail.walletBalance;
@@ -119,8 +124,14 @@
 					<TaskCreation id={params.id} />
 				  </Route>
 				{/if}
+				<Route path="/batch/:id" let:params>
+				  <BatchDetails batchId={params.id} />
+				</Route>
 				<Route path="/terms" component={Terms} />
 				<Route path="/privacy" component={Privacy} />
+				
+				<!-- Catch-all route -->
+				<Route path="*" component={{ render: catchAllRedirect }} />
 			  </div>
 			{/key}
 		  </div>
