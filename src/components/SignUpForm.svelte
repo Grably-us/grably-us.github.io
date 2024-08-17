@@ -42,7 +42,7 @@
       const createdUser = await pb.collection('users').create(userData);
       
       if (createdUser) {
-      error = ""; 
+      await pb.collection('users').requestVerification(email);
       alert("Registration successful! Please check your email to verify your account.");
       navigate('/check-email');
     } else {
