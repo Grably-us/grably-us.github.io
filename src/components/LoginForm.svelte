@@ -8,11 +8,11 @@
   let email = '';
   let password = '';
   let error = '';
+  let resendMessage = '';
   export let onLoginSuccess; 
   export let onLoginError;
 
   onMount(() => {
-    // Initialize OAuth providers
     initOAuthProviders();
   });
 
@@ -20,11 +20,27 @@
     try {
       const authData = await pb.collection('users').authWithPassword(email, password);
       if (authData) {
-        onLoginSuccess(authData.record); 
+        if (!authData.record.verified) {
+          error = "Please verify your email before logging in.";
+          // Offer to resend verification email
+          resendMessage = "Didn't receive the email? Click here to resend.";
+        } else {
+          onLoginSuccess(authData.record); 
+        }
       }
     } catch (userError) {
       error = userError.message;
       onLoginError(error);
+    }
+  }
+
+  async function resendVerification() {
+    try {
+      await pb.collection('users').requestVerification(email);
+      resendMessage = 'Verification email sent. Please check your inbox.';
+      navigate('/check-email');
+    } catch (error) {
+      resendMessage = `Error: ${error.message}`;
     }
   }
 
@@ -67,7 +83,16 @@
   <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 mb-4">Login</button>
 </form>
 
-<div class="flex flex-col space-y-2">
+{#if error}
+  <p class="text-red-500 mb-2">{error}</p>
+{/if}
+
+{#if resendMessage}
+  <p class="mb-2">{resendMessage}</p>
+  <button on:click={resendVerification} class="text-blue-500 underline">Resend verification email</button>
+{/if}
+
+<div class="flex flex-col space-y-2 mt-4">
   <button id="googleAuth" class="w-full bg-red-500 text-white p-2 rounded hover:bg-red-600">
     Login with Google
   </button>

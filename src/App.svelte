@@ -12,6 +12,8 @@
 	import Terms from "./routes/Terms.svelte";
 	import Privacy from "./routes/Privacy.svelte";
 	import { fade } from 'svelte/transition';
+	import VerifyEmail from "./routes/VerifyEmail.svelte";
+	import CheckEmail from "./routes/CheckEmail.svelte";
 	
 	export let url = "";
 	const base = '';
@@ -116,6 +118,8 @@
 			</main>
 			<Footer />
 		{:else}
+			<Route path="/verify-email" component={VerifyEmail} />
+			<Route path="/check-email" component={CheckEmail} />
 			<Route path="*" component={Login} />
 		{/if}
 	</div>

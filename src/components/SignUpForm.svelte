@@ -42,11 +42,12 @@
       const createdUser = await pb.collection('users').create(userData);
       
       if (createdUser) {
-        // Login after successful signup
-        await login(email, password);
-      } else {
-        error = "Failed to create user. Please try again.";
-      }
+      error = ""; 
+      alert("Registration successful! Please check your email to verify your account.");
+      navigate('/check-email');
+    } else {
+      error = "Failed to create user. Please try again.";
+    }
     } catch (e) {
       console.error('Signup error:', e);
       if (e.data && e.data.data) {
