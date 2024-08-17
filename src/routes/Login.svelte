@@ -60,7 +60,7 @@
 <div class="flex items-center justify-center min-h-screen bg-gray-100">
   <div class="bg-white p-8 rounded shadow-md w-full max-w-md">
     <div class="flex justify-center mb-6">
-      <img src="/grably-icon.png" alt="Grably Logo" class="w-20 h-20" />
+      <img src="/favicon.svg" alt="Grably Logo" class="w-20 h-20" />
     </div>
 
     {#if error}

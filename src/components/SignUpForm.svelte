@@ -99,9 +99,7 @@
 </script>
 
 <div class="max-w-md mx-auto mt-8">
-  <div class="flex justify-center mb-6">
-    <img src="/grably-icon.png" alt="Grably Logo" class="w-20 h-20" />
-  </div>
+
 
   <h2 class="text-2xl mb-4 font-bold text-center">Sign Up for Grably</h2>
   {#if error}
