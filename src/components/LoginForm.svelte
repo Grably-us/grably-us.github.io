@@ -12,13 +12,22 @@
   let oAuthProvider = '';
   let oAuthData = null;
   
-  export let onLoginSuccess; 
+
   export let onLoginError;
   
   onMount(() => {
     initOAuthProviders();
     checkOAuthRedirect();
   });
+  
+  function onLoginSuccess(user) {
+    // Redirect based on user role
+    if (user.role === 'DataProvider') {
+      navigate('/contracts');
+    } else {
+      navigate('/');
+    }
+  }
   
   function initOAuthProviders() {
     const googleBtn = document.getElementById('googleAuth');
@@ -31,12 +40,14 @@
   async function authWithOAuth(provider) {
     try {
       oAuthProvider = provider;
-      const authData = await pb.collection('users').authWithOAuth2({ provider });
+      const authData = await pb.collection('users').authWithOAuth2({ 
+        provider,
+        createData: { role: 'Customer' } // Set a default role
+      });
       handleOAuthResponse(authData);
     } catch (err) {
       console.error('OAuth error:', err);
       error = `OAuth login failed: ${err.message}`;
-      onLoginError(error);
     }
   }
   
@@ -60,30 +71,35 @@
     }
   }
   
+
   function handleOAuthResponse(authData) {
-    if (authData.record.role) {
-      // User already has a role, proceed with login
-      onLoginSuccess(authData.record);
-    } else {
+    if (authData.isNew) {
       // New user, show role selection modal
       oAuthData = authData;
       showRoleModal = true;
+    } else {
+      // Existing user, proceed with login
+      onLoginSuccess(authData.record);
     }
   }
   
   async function handleRoleSelection(selectedRole) {
     try {
-      const updatedUser = await pb.collection('users').update(oAuthData.record.id, {
-        role: selectedRole
-      });
-      onLoginSuccess(updatedUser);
+      if (selectedRole !== 'Customer') {
+        const updatedUser = await pb.collection('users').update(oAuthData.record.id, {
+          role: selectedRole
+        });
+        onLoginSuccess(updatedUser);
+      } else {
+        // If they choose 'Customer', no need to update as it's already the default
+        onLoginSuccess(oAuthData.record);
+      }
     } catch (err) {
       console.error('Role update error:', err);
       error = `Failed to update user role: ${err.message}`;
-      onLoginError(error);
     }
   }
-  
+
   async function login() {
     try {
       const authData = await pb.collection('users').authWithPassword(email, password);

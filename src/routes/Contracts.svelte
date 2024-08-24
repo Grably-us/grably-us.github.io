@@ -9,11 +9,16 @@
   let error = null;
 
   onMount(async () => {
+    if (!pb.authStore.isValid) {
+      navigate('/login');
+      return;
+    }
+    
     try {
       const records = await pb.collection('Contract').getList(1, 50, {
         sort: '-created',
         expand: 'creator',
-        filter: 'status = "Active"'  // Only fetch active contracts
+        filter: 'status = "Active"'
       });
       contracts = records.items;
     } catch (err) {

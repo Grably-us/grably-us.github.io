@@ -2,7 +2,7 @@
   import { pb } from '../services/pocketbase';
   import { Link, navigate } from 'svelte-routing';
   import { onMount } from 'svelte';
-
+  import { validateEmail } from '../services/ValidationService';
   let name = '';
   let email = '';
   let password = '';
@@ -28,6 +28,12 @@
       return;
     }
 
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.isValid) {
+      error = emailValidation.reason;
+      return;
+    }
+
     try {
       const userData = {
         name,
@@ -42,12 +48,12 @@
       const createdUser = await pb.collection('users').create(userData);
       
       if (createdUser) {
-      await pb.collection('users').requestVerification(email);
-      alert("Registration successful! Please check your email to verify your account.");
-      navigate('/check-email');
-    } else {
-      error = "Failed to create user. Please try again.";
-    }
+        await pb.collection('users').requestVerification(email);
+        alert("Registration successful! Please check your email to verify your account.");
+        navigate('/check-email');
+      } else {
+        error = "Failed to create user. Please try again.";
+      }
     } catch (e) {
       console.error('Signup error:', e);
       if (e.data && e.data.data) {
