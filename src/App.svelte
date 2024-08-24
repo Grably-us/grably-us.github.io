@@ -83,12 +83,7 @@
 		walletBalance = event.detail.walletBalance;
 	}
 
-	function handleError(err) {
-		error = err.message;
-		setTimeout(() => {
-			error = null;
-		}, 5000);
-	}
+
 </script>
 
 <Router {url} basepath={base}>

@@ -71,10 +71,10 @@
     {/if}
 
     {#if currentView === 'login'}
-      <LoginForm 
-        onLoginSuccess={handleLoginSuccess} 
-        onLoginError={handleLoginError}
-      />
+    <LoginForm 
+    {setView}
+    onLoginSuccess={handleLoginSuccess}
+  />
       <div class="mt-4 text-center">
         <button on:click={() => setView('signup')} class="text-blue-500 hover:underline">Create an account</button>
         <span class="mx-2">|</span>
@@ -83,6 +83,7 @@
     {:else if currentView === 'signup'}
       <SignupForm />
       <div class="mt-4 text-center">
+
         <button on:click={() => setView('login')} class="text-blue-500 hover:underline">Already have an account? Log in</button>
       </div>
     {:else if currentView === 'reset'}

@@ -1,83 +1,13 @@
 <script>
-  import { onMount } from 'svelte';
-  import { navigate } from 'svelte-routing';
   import { pb } from '../services/pocketbase';
-  import RoleSelectionModal from './RoleSelectionModal.svelte';
+  
+  export let setView;
+  export let onLoginSuccess;
   
   let email = '';
   let password = '';
-  let error = '';
   let resendMessage = '';
-  let showRoleModal = false;
-  let oAuthProvider = '';
-  let oAuthData = null;
-  
-
-  export let onLoginError;
-  
-  onMount(() => {
-    initOAuthProviders();
-  });
-  
-  function onLoginSuccess(user) {
-    // Redirect based on user role
-    if (user.role === 'DataProvider') {
-      navigate('/contracts');
-    } else {
-      navigate('/');
-    }
-  }
-  
-  function initOAuthProviders() {
-  const googleBtn = document.getElementById('googleAuth');
-  const githubBtn = document.getElementById('githubAuth');
-
-  googleBtn.addEventListener('click', () => authWithOAuth('google'));
-  githubBtn.addEventListener('click', () => authWithOAuth('github'));
-}
-  
-async function authWithOAuth(provider) {
-  try {
-    const authData = await pb.collection('users').authWithOAuth2({ 
-      provider: provider,
-      createData: { role: 'Customer' }, // Set a default role
-      redirectUrl: window.location.origin + '/login' // Adjust this if needed
-    });
-    handleOAuthResponse(authData);
-  } catch (err) {
-    console.error('OAuth error:', err);
-    error = `OAuth login failed: ${err.message}`;
-  }
-}
-
-  
-function handleOAuthResponse(authData) {
-  if (authData.meta?.isNew) {
-    // New user, show role selection modal
-    oAuthData = authData;
-    showRoleModal = true;
-  } else {
-    // Existing user, proceed with login
-    onLoginSuccess(authData.record);
-  }
-}
-  
-  async function handleRoleSelection(selectedRole) {
-    try {
-      if (selectedRole !== 'Customer') {
-        const updatedUser = await pb.collection('users').update(oAuthData.record.id, {
-          role: selectedRole
-        });
-        onLoginSuccess(updatedUser);
-      } else {
-        // If they choose 'Customer', no need to update as it's already the default
-        onLoginSuccess(oAuthData.record);
-      }
-    } catch (err) {
-      console.error('Role update error:', err);
-      error = `Failed to update user role: ${err.message}`;
-    }
-  }
+  let error = '';
 
   async function login() {
     try {
@@ -85,7 +15,6 @@ function handleOAuthResponse(authData) {
       if (authData) {
         if (!authData.record.verified) {
           error = "Please verify your email before logging in.";
-          // Offer to resend verification email
           resendMessage = "Didn't receive the email? Click here to resend.";
         } else {
           onLoginSuccess(authData.record); 
@@ -93,7 +22,6 @@ function handleOAuthResponse(authData) {
       }
     } catch (userError) {
       error = userError.message;
-      onLoginError(error);
     }
   }
   
@@ -101,44 +29,30 @@ function handleOAuthResponse(authData) {
     try {
       await pb.collection('users').requestVerification(email);
       resendMessage = 'Verification email sent. Please check your inbox.';
-      navigate('/check-email');
+      setView('check-email');
     } catch (err) {
       resendMessage = `Error: ${err.message}`;
     }
   }
-  </script>
-  
-  <h2 class="text-2xl mb-4 font-bold text-center">Login to Grably</h2>
-  <form on:submit|preventDefault={login}>
-    <div class="mb-4">
-        <label for="email" class="block mb-2">Email</label>
-        <input id="email" bind:value={email} type="text" class="w-full p-2 border rounded" required>
-    </div>
-    <div class="mb-4">
-        <label for="password" class="block mb-2">Password</label>
-        <input id="password" bind:value={password} type="password" class="w-full p-2 border rounded" required>
-    </div>
-    <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 mb-4">Login</button>
-  </form>
-  
+</script>
+
+<h2 class="text-2xl mb-4 font-bold text-center">Login to Grably</h2>
+<form on:submit|preventDefault={login}>
   {#if error}
-    <p class="text-red-500 mb-2">{error}</p>
+    <p class="text-red-500 mb-4">{error}</p>
   {/if}
-  
-  {#if resendMessage}
-    <p class="mb-2">{resendMessage}</p>
-    <button on:click={resendVerification} class="text-blue-500 underline">Resend verification email</button>
-  {/if}
-  
-  <div class="flex flex-col space-y-2 mt-4">
-    <button id="googleAuth" class="w-full bg-red-500 text-white p-2 rounded hover:bg-red-600">
-      Login with Google
-    </button>
-    <button id="githubAuth" class="w-full bg-gray-800 text-white p-2 rounded hover:bg-gray-900">
-      Login with GitHub
-    </button>
+  <div class="mb-4">
+    <label for="email" class="block mb-2">Email</label>
+    <input id="email" bind:value={email} type="text" class="w-full p-2 border rounded" required>
   </div>
-  
-  {#if showRoleModal}
-    <RoleSelectionModal on:selectRole={event => handleRoleSelection(event.detail)} />
-  {/if}
+  <div class="mb-4">
+    <label for="password" class="block mb-2">Password</label>
+    <input id="password" bind:value={password} type="password" class="w-full p-2 border rounded" required>
+  </div>
+  <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 mb-4">Login</button>
+</form>
+
+{#if resendMessage}
+  <p class="mb-2">{resendMessage}</p>
+  <button on:click={resendVerification} class="text-blue-500 underline">Resend verification email</button>
+{/if}
