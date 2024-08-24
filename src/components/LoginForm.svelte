@@ -17,7 +17,6 @@
   
   onMount(() => {
     initOAuthProviders();
-    checkOAuthRedirect();
   });
   
   function onLoginSuccess(user) {
@@ -30,58 +29,38 @@
   }
   
   function initOAuthProviders() {
-    const googleBtn = document.getElementById('googleAuth');
-    const githubBtn = document.getElementById('githubAuth');
-  
-    googleBtn.addEventListener('click', () => authWithOAuth('google'));
-    githubBtn.addEventListener('click', () => authWithOAuth('github'));
-  }
-  
-  async function authWithOAuth(provider) {
-    try {
-      oAuthProvider = provider;
-      const authData = await pb.collection('users').authWithOAuth2({ 
-        provider,
-        createData: { role: 'Customer' } // Set a default role
-      });
-      handleOAuthResponse(authData);
-    } catch (err) {
-      console.error('OAuth error:', err);
-      error = `OAuth login failed: ${err.message}`;
-    }
-  }
-  
-  function checkOAuthRedirect() {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('provider')) {
-      oAuthProvider = params.get('provider');
-      pb.collection('users').authWithOAuth2Code(
-        oAuthProvider,
-        params.get('code'),
-        params.get('state'),
-        params.get('codeVerifier'),
-        window.location.origin + '/login'
-      )
-      .then(result => handleOAuthResponse(result))
-      .catch(err => {
-        console.error('OAuth redirect error:', err);
-        error = `OAuth login failed: ${err.message}`;
-        onLoginError(error);
-      });
-    }
-  }
-  
+  const googleBtn = document.getElementById('googleAuth');
+  const githubBtn = document.getElementById('githubAuth');
 
-  function handleOAuthResponse(authData) {
-    if (authData.isNew) {
-      // New user, show role selection modal
-      oAuthData = authData;
-      showRoleModal = true;
-    } else {
-      // Existing user, proceed with login
-      onLoginSuccess(authData.record);
-    }
+  googleBtn.addEventListener('click', () => authWithOAuth('google'));
+  githubBtn.addEventListener('click', () => authWithOAuth('github'));
+}
+  
+async function authWithOAuth(provider) {
+  try {
+    const authData = await pb.collection('users').authWithOAuth2({ 
+      provider: provider,
+      createData: { role: 'Customer' }, // Set a default role
+      redirectUrl: window.location.origin + '/login' // Adjust this if needed
+    });
+    handleOAuthResponse(authData);
+  } catch (err) {
+    console.error('OAuth error:', err);
+    error = `OAuth login failed: ${err.message}`;
   }
+}
+
+  
+function handleOAuthResponse(authData) {
+  if (authData.meta?.isNew) {
+    // New user, show role selection modal
+    oAuthData = authData;
+    showRoleModal = true;
+  } else {
+    // Existing user, proceed with login
+    onLoginSuccess(authData.record);
+  }
+}
   
   async function handleRoleSelection(selectedRole) {
     try {
