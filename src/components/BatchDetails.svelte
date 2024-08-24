@@ -13,6 +13,7 @@
 
   onMount(async () => {
     await fetchBatchDetails();
+    console.log(batch);
   });
 
   async function fetchBatchDetails() {
@@ -26,6 +27,12 @@
       error = err.message;
       loading = false;
     }
+  }
+
+  function getBatchLogo(batch) {
+    // Generate a deterministic seed based on the batch ID
+    const seed = batch.id.substring(0, 8);
+    return `https://api.dicebear.com/6.x/identicon/svg?seed=${seed}`;
   }
 
   async function updateBatchStatus(newStatus) {
@@ -145,9 +152,15 @@
           {editMode ? 'Cancel Edit' : 'Review Batch'}
         </button>
       </div>
-      <p>Description: {batch.description}</p>
-      <p>Uploaded by: {batch.expand.owner.name}</p>
-      <p>Upload date: {formatDate(batch.created)}</p>
+      <div class="flex items-center mb-4">
+        <img src={getBatchLogo(batch)} alt="Batch logo" class="w-16 h-16 mr-4 rounded-full" />
+        <div>
+          <p class="text-lg font-semibold">Status: {batch.status}</p>
+          <p>Description: {batch.description}</p>
+          <p>Uploaded by: {batch.owner.name}</p>
+          <p>Upload date: {formatDate(batch.created)}</p>
+        </div>
+      </div>
       {#if batch.review_date}
         <p>Reviewed on: {formatDate(batch.review_date)}</p>
       {/if}

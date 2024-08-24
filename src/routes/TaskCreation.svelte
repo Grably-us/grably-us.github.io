@@ -1,88 +1,88 @@
 <script>
-    import { pb } from '../services/pocketbase';
-    import { navigate } from 'svelte-routing';
-    import { onMount } from 'svelte';
-  
-    export let id = null; // If provided, we're editing an existing task
-  
-    let title = '';
-    let description = '';
-    let price = 0;
-    let importance = 0;
-    let thumbnail = null;
-    let thumbnailPreview = null;
-    let forTelegram = false;
-    let error = '';
-    let contracts = [];
-    let selectedContract = '';
-  
-    onMount(async () => {
-      if (pb.authStore.model?.role !== 'Admin') {
-        navigate('/');
+  import { pb } from '../services/pocketbase';
+  import { navigate } from 'svelte-routing';
+  import { onMount } from 'svelte';
+
+  export let id = null; // If provided, we're editing an existing task
+
+  let title = '';
+  let description = '';
+  let price = 0;
+  let importance = 0;
+  let thumbnail = null;
+  let thumbnailPreview = null;
+  let forTelegram = false;
+  let error = '';
+  let contracts = [];
+  let selectedContract = '';
+
+  onMount(async () => {
+    if (pb.authStore.model?.role !== 'Admin') {
+      navigate('/');
+    }
+    await fetchContracts();
+    if (id) {
+      await fetchTask(id);
+    }
+  });
+
+  async function fetchContracts() {
+    try {
+      const records = await pb.collection('Contract').getList(1, 50, {
+        sort: '-created',
+        filter: 'status = "Active"'
+      });
+      contracts = records.items;
+    } catch (e) {
+      console.error('Error fetching contracts:', e);
+      error = 'Failed to load contracts. Please try again.';
+    }
+  }
+
+  async function fetchTask(taskId) {
+    try {
+      const task = await pb.collection('Task').getOne(taskId);
+      title = task.title;
+      description = task.description;
+      price = task.price;
+      importance = task.importance;
+      forTelegram = task.for_telegram;
+      selectedContract = task.contract;
+      thumbnailPreview = task.thumbnail ? pb.files.getUrl(task, task.thumbnail) : null;
+    } catch (e) {
+      console.error('Error fetching task:', e);
+      error = 'Failed to load task. Please try again.';
+    }
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    try {
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('description', description);
+      formData.append('price', price);
+      formData.append('importance', importance);
+      formData.append('for_telegram', forTelegram);
+      formData.append('creator', pb.authStore.model.id);
+      if (selectedContract) {
+        formData.append('contract', selectedContract);
       }
-      await fetchContracts();
+      if (thumbnail) {
+        formData.append('thumbnail', thumbnail);
+      }
+
       if (id) {
-        await fetchTask(id);
+        await pb.collection('Task').update(id, formData);
+      } else {
+        await pb.collection('Task').create(formData);
       }
-    });
-  
-    async function fetchContracts() {
-      try {
-        const records = await pb.collection('Contract').getList(1, 50, {
-          sort: '-created',
-          filter: 'status = "Active"'
-        });
-        contracts = records.items;
-      } catch (e) {
-        console.error('Error fetching contracts:', e);
-        error = 'Failed to load contracts. Please try again.';
-      }
+      navigate('/tasks');
+    } catch (e) {
+      console.error('Error saving task:', e);
+      error = e.message;
     }
-  
-    async function fetchTask(taskId) {
-      try {
-        const task = await pb.collection('Task').getOne(taskId);
-        title = task.title;
-        description = task.description;
-        price = task.price;
-        importance = task.importance;
-        forTelegram = task.for_telegram;
-        selectedContract = task.contract;
-        thumbnailPreview = task.thumbnail ? pb.files.getUrl(task, task.thumbnail) : null;
-      } catch (e) {
-        console.error('Error fetching task:', e);
-        error = 'Failed to load task. Please try again.';
-      }
-    }
-  
-    async function handleSubmit(event) {
-      event.preventDefault();
-      try {
-        const formData = new FormData();
-        formData.append('title', title);
-        formData.append('description', description);
-        formData.append('price', price);
-        formData.append('importance', importance);
-        formData.append('for_telegram', forTelegram);
-        formData.append('creator', pb.authStore.model.id);
-        if (selectedContract) {
-          formData.append('contract', selectedContract);
-        }
-        if (thumbnail) {
-          formData.append('thumbnail', thumbnail);
-        }
-  
-        if (id) {
-          await pb.collection('Task').update(id, formData);
-        } else {
-          await pb.collection('Task').create(formData);
-        }
-        navigate('/tasks');
-      } catch (e) {
-        console.error('Error saving task:', e);
-        error = e.message;
-      }
-    }
+  }
   
     function handleThumbnailChange(event) {
       const file = event.target.files[0];
