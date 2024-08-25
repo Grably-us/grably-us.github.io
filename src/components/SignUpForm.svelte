@@ -13,6 +13,15 @@
   let error = '';
 
   async function signup() {
+    // Check if email already exists
+    const existingUsers = await pb.collection('users').getList(1, 1, {
+      filter: `email = "${email}"`
+    });
+
+    if (existingUsers.items.length > 0) {
+      error = "This email is already registered. Please use a different email or try logging in.";
+      return;
+    }
     if (password !== confirmPassword) {
       error = "Passwords don't match";
       return;

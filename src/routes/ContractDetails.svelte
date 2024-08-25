@@ -16,6 +16,8 @@
   let individualContribution = 0;
   let totalContribution = 0;
   let isContractCreator = false;
+  let debugLog = [];
+
 
   onMount(async () => {
     await loadContract();
@@ -23,45 +25,58 @@
 
   async function loadContract() {
     try {
+
       contract = await pb.collection('Contract').getOne(id, {
         expand: 'creator,DataBatch_via_contract.DataPoint_via_batch'
       });
 
+
       isContractCreator = contract.creator === pb.authStore.model.id;
+
 
       if (contract.expand && contract.expand['DataBatch_via_contract']) {
         dataBatches = contract.expand['DataBatch_via_contract'];
+
       } else {
         dataBatches = [];
+
       }
 
       calculateStats();
     } catch (err) {
       error = `Error fetching contract: ${err.message}`;
+
     }
   }
   
   function calculateStats() {
+
     totalFilesUploaded = 0;
     userFilesUploaded = 0;
     individualContribution = 0;
-    totalContribution = 0;
+    totalContribution = contract.total_collected || 0;
 
     if (dataBatches.length > 0) {
-      dataBatches.forEach(batch => {
+      dataBatches.forEach((batch, index) => {
+
         if (batch.expand && batch.expand['DataPoint_via_batch']) {
           const dataPoints = batch.expand['DataPoint_via_batch'];
+
           dataPoints.forEach(dataPoint => {
+
             totalFilesUploaded++;
-            totalContribution++;
             if (dataPoint.owner === pb.authStore.model.id) {
               userFilesUploaded++;
               individualContribution++;
+
             }
           });
+        } else {
+          console.log(`Batch has no data points`);
         }
       });
     }
+
   }
   
   async function handleFileUpload() {
@@ -144,7 +159,7 @@
   }
   $: progressPercentage = (totalContribution / (contract?.amount_requested || 1)) * 100 || 0;
   $: individualProgressPercentage = (individualContribution / (contract?.amount_requested || 1)) * 100 || 0;
-  $: remainingFiles = (contract?.amount_requested || 0) - totalFilesUploaded;
+  $: remainingFiles = Math.max(0, (contract?.amount_requested || 0) - totalFilesUploaded);
 </script>
 
 <div class="container mx-auto px-4 py-8">
@@ -182,28 +197,28 @@
       </p>
       <p class="mb-2"><strong>Creator:</strong> {contract.expand?.creator?.name || 'Unknown'}</p>
       
-      <div class="mt-6">
-        <h2 class="text-xl font-semibold mb-4">Contract Progress</h2>
-        <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
-          <div class="bg-blue-600 h-4 rounded-full" style="width: {individualProgressPercentage}%"></div>
-          <div class="bg-green-400 h-4 rounded-full" style="width: {progressPercentage - individualProgressPercentage}%; margin-top: -1rem;"></div>
+    <div class="mt-6">
+      <h2 class="text-xl font-semibold mb-4">Contract Progress</h2>
+      <div class="w-full bg-gray-200 rounded-full h-8 mb-2 overflow-hidden">
+        <div class="bg-green-400 h-8 rounded-full relative" style="width: {progressPercentage}%">
+          <div class="absolute top-0 left-0 bg-blue-600 h-8 striped-progress" style="width: {(individualProgressPercentage / progressPercentage) * 100}%"></div>
         </div>
-        <p class="text-sm text-gray-600 mb-4">
-          Your contribution: {individualContribution} files ({individualProgressPercentage.toFixed(2)}%)
-          <br>
-          Total progress: {totalContribution} / {contract.amount_requested} files ({progressPercentage.toFixed(2)}%)
-        </p>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div class="bg-gray-100 p-4 rounded-lg">
-            <h3 class="font-semibold mb-2">Your Contributions</h3>
-            <p>{userFilesUploaded} files uploaded</p>
-          </div>
-          <div class="bg-gray-100 p-4 rounded-lg">
-            <h3 class="font-semibold mb-2">Remaining</h3>
-            <p>{remainingFiles} files needed</p>
-          </div>
+      </div>
+      <div class="flex justify-between text-sm text-gray-600 mb-4">
+        <span>Your contribution: {individualContribution} files ({individualProgressPercentage.toFixed(2)}%)</span>
+        <span>Total progress: {totalContribution} / {contract.amount_requested} files ({progressPercentage.toFixed(2)}%)</span>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div class="bg-gray-100 p-4 rounded-lg">
+          <h3 class="font-semibold mb-2">Your Contributions</h3>
+          <p>{userFilesUploaded} files uploaded</p>
         </div>
+        <div class="bg-gray-100 p-4 rounded-lg">
+          <h3 class="font-semibold mb-2">Remaining</h3>
+          <p>{remainingFiles} files needed</p>
+        </div>
+      </div>
 
         {#if pb.authStore.model?.role === 'DataProvider' || pb.authStore.model?.role === 'Admin'}
           <h2 class="text-xl font-semibold mb-4">Upload Files</h2>
@@ -271,3 +286,30 @@
     <p>Loading contract details...</p>
   {/if}
 </div>
+
+
+<style>
+  @keyframes moveStripes {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 50px 50px;
+    }
+  }
+
+  .striped-progress {
+    background-image: linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.15) 25%,
+      transparent 25%,
+      transparent 50%,
+      rgba(255, 255, 255, 0.15) 50%,
+      rgba(255, 255, 255, 0.15) 75%,
+      transparent 75%,
+      transparent 100%
+    );
+    background-size: 50px 50px;
+    animation: moveStripes 2s linear infinite;
+  }
+</style>
