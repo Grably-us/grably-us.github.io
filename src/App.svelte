@@ -15,78 +15,75 @@
 	import VerifyEmail from "./routes/VerifyEmail.svelte";
 	import CheckEmail from "./routes/CheckEmail.svelte";
 	import TaskList from "./routes/TaskList.svelte";
-    import TaskCreation from "./routes/TaskCreation.svelte";
-    import BatchDetails from "./components/BatchDetails.svelte";
-
+	import TaskCreation from "./routes/TaskCreation.svelte";
+	import BatchDetails from "./components/BatchDetails.svelte";
+  
 	export let url = "";
-	const base = '';
 	let isAuthenticated = false;
 	let userRole = '';
 	let user = null;
 	let walletBalance = 0;
 	let loading = true;
 	let error = null;
-    let segment = '';
-
+	let segment = '';
+  
 	$: {
-		if (typeof window !== 'undefined') {
-			segment = window.location.pathname.split('/')[1];
-		}
+	  if (typeof window !== 'undefined') {
+		segment = window.location.pathname.split('/')[1];
+	  }
 	}
-
+  
 	onMount(async () => {
-		try {
-			loading = true;
-			if (pb.authStore.isValid) {
-				user = pb.authStore.model;
-				userRole = user.role;
-				isAuthenticated = true;
-				if (user.wallet) {
-					const wallet = await pb.collection('Wallet').getOne(user.wallet);
-					walletBalance = wallet.token_balance;
-				}
-				if (userRole === 'DataProvider' && window.location.pathname === '/') {
-					navigate('/contracts');
-				}
-			}
-		} catch (err) {
-			error = err.message;
-		} finally {
-			loading = false;
+	  try {
+		loading = true;
+		if (pb.authStore.isValid) {
+		  user = pb.authStore.model;
+		  userRole = user.role;
+		  isAuthenticated = true;
+		  if (user.wallet) {
+			const wallet = await pb.collection('Wallet').getOne(user.wallet);
+			walletBalance = wallet.token_balance;
+		  }
+		  if (userRole === 'DataProvider' && window.location.pathname === '/') {
+			navigate('/contracts');
+		  }
 		}
-
-		pb.authStore.onChange((auth) => {
-			isAuthenticated = auth !== null;
-			userRole = auth?.model?.role || '';
-			user = auth?.model;
-			updateWalletBalance();
-		});
+	  } catch (err) {
+		error = err.message;
+	  } finally {
+		loading = false;
+	  }
+  
+	  pb.authStore.onChange((auth) => {
+		isAuthenticated = auth !== null;
+		userRole = auth?.model?.role || '';
+		user = auth?.model;
+		updateWalletBalance();
+	  });
 	});
-
+  
 	async function updateWalletBalance() {
-		if (user && user.wallet) {
-			try {
-				const wallet = await pb.collection('Wallet').getOne(user.wallet);
-				walletBalance = wallet.token_balance;
-			} catch (err) {
-				error = 'Error fetching wallet balance';
-			}
+	  if (user && user.wallet) {
+		try {
+		  const wallet = await pb.collection('Wallet').getOne(user.wallet);
+		  walletBalance = wallet.token_balance;
+		} catch (err) {
+		  error = 'Error fetching wallet balance';
 		}
+	  }
 	}
-
+  
 	function catchAllRedirect() {
-    navigate("/contracts", { replace: true });
-  }
-
-	function handleProfileUpdate(event) {
-		user = event.detail.user;
-		walletBalance = event.detail.walletBalance;
+	  navigate("/contracts", { replace: true });
 	}
-
-
-</script>
-
-<Router {url} basepath={base}>
+  
+	function handleProfileUpdate(event) {
+	  user = event.detail.user;
+	  walletBalance = event.detail.walletBalance;
+	}
+  </script>
+  
+  <Router {url}>
 	<div class="min-h-screen flex flex-col">
 	  {#if loading}
 		<div class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
@@ -125,8 +122,9 @@
 				<Route path="/terms" component={Terms} />
 				<Route path="/privacy" component={Privacy} />
 				
-				<!-- Catch-all route -->
-				<Route path="*" component={{ render: catchAllRedirect }} />
+				<Route path="*">
+				  {catchAllRedirect}
+				</Route>
 			  </div>
 			{/key}
 		  </div>
@@ -135,26 +133,27 @@
 	  {:else}
 		<Route path="/verify-email" component={VerifyEmail} />
 		<Route path="/check-email" component={CheckEmail} />
+		<Route path="/login" component={Login} />
 		<Route path="*" component={Login} />
 	  {/if}
 	</div>
   </Router>
-
-<style>
+  
+  <style>
 	:global(body) {
-		margin: 0;
-		padding: 0;
-		--bgColorMenu: #1d1d27;
-		--duration: 0.7s;
+	  margin: 0;
+	  padding: 0;
+	  --bgColorMenu: #1d1d27;
+	  --duration: 0.7s;
+	}
+	
+	:global(html *) {
+	  box-sizing: border-box;
 	}
   
-	:global(html *) {
-		box-sizing: border-box;
-	}
-
 	@media (max-width: 640px) {
-		main {
-			padding: 1rem;
-		}
+	  main {
+		padding: 1rem;
+	  }
 	}
-</style>
+  </style>

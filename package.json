@@ -34,6 +34,8 @@
   },
   "dependencies": {
     "date-fns": "^3.6.0",
+    "lodash": "^4.17.21",
+    "meilisearch": "^0.41.0",
     "pocketbase": "^0.21.3",
     "svelte-icons": "^2.1.0",
     "svelte-markdown": "^0.4.1",

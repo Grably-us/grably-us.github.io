@@ -5,6 +5,7 @@
   import Profile from './Profile.svelte';
   import { fade } from 'svelte/transition';
   import { ensureWalletExists } from '../services/WalletService';
+  import SearchBar from './SearchBar.svelte';
 
   export let userRole;
   export let segment;
@@ -115,6 +116,9 @@
     </div>
     
     <div class="flex items-center space-x-6">
+      <!-- {#if userRole === 'Customer' || userRole === 'Admin'}
+        <SearchBar />
+      {/if} -->
       {#if userRole !== 'DataProvider'}
         <a
           href="/new-contract"
