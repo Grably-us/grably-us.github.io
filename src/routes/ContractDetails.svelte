@@ -196,6 +196,10 @@
         {contract.amount_requested}
       </p>
       <p class="mb-2 flex items-center">
+        <strong>Accepted Data Types:</strong> 
+        {contract.accepted_data_types}
+      </p>
+      <p class="mb-2 flex items-center">
         <strong>Price Per Point:</strong> 
         <img src="/grably-icon.png" alt="Grably icon" class="inline-block w-4 h-4 mx-1" />
         {contract.price_per_point}

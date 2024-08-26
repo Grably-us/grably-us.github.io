@@ -11,10 +11,12 @@
   let thumbnail = null;
   let thumbnailPreview = null;
   let error = '';
-  let acceptedDataTypes = [];
-
-  // Add a list of data types
-  const dataTypes = ['images', 'text', 'audio', 'video'];
+  let acceptedDataTypes = {
+    image: false,
+    text: false,
+    audio: false,
+    video: false
+  };
 
   onMount(() => {
     if (pb.authStore.model?.role === 'DataProvider') {
@@ -23,22 +25,26 @@
   });
 
   async function submitContract(event) {
-    event.preventDefault(); // Prevent default form submission
+    event.preventDefault();
     try {
-      const formData = new FormData();
-      formData.append('title', title);
-      formData.append('description', description);
-      formData.append('amount_requested', amount_requested);
-      formData.append('price_per_point', price_per_point);
-      formData.append('deadline', deadline);
-      formData.append('status', 'Draft');
-      formData.append('creator', pb.authStore.model.id);
-      formData.append('accepted_data_types', JSON.stringify(acceptedDataTypes));
+      const data = {
+        title,
+        description,
+        amount_requested,
+        price_per_point,
+        deadline,
+        status: 'Draft',
+        creator: pb.authStore.model.id,
+        accepted_data_types: Object.entries(acceptedDataTypes)
+          .filter(([_, value]) => value)
+          .map(([key, _]) => key)
+      };
+
       if (thumbnail) {
-        formData.append('thumbnail', thumbnail);
+        data.thumbnail = thumbnail;
       }
 
-      const record = await pb.collection('Contract').create(formData);
+      const record = await pb.collection('Contract').create(data);
       navigate('/contracts');
     } catch (e) {
       console.error('Error creating contract:', e);
@@ -95,20 +101,24 @@
       <label for="title" class="block mb-2 font-semibold">Title</label>
       <input id="title" bind:value={title} type="text" class="w-full p-2 border rounded" required>
     </div>
-    <div class="mb-4">
-      <label for="acceptedDataTypes" class="block mb-2 font-semibold">Accepted Data Types</label>
-      <select 
-        id="acceptedDataTypes" 
-        bind:value={acceptedDataTypes} 
-        multiple 
-        class="w-full p-2 border rounded" 
-        required
-      >
-        {#each dataTypes as dataType}
-          <option value={dataType}>{dataType}</option>
+    <fieldset class="mb-4">
+      <legend class="block mb-2 font-semibold">Accepted Data Types</legend>
+      <div class="flex flex-wrap -mx-2">
+        {#each Object.entries(acceptedDataTypes) as [type, checked]}
+          <div class="px-2 mb-2 w-1/2">
+            <label class="inline-flex items-center">
+              <input
+                type="checkbox"
+                id={`dataType-${type}`}
+                bind:checked={acceptedDataTypes[type]}
+                class="form-checkbox h-5 w-5 text-blue-600"
+              >
+              <span class="ml-2 text-gray-700 capitalize">{type}</span>
+            </label>
+          </div>
         {/each}
-      </select>
-    </div>
+      </div>
+    </fieldset>
     <div class="mb-4">
       <label for="description" class="block mb-2 font-semibold">Description</label>
       <textarea 
