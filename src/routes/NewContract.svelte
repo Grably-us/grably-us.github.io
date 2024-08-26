@@ -11,6 +11,10 @@
   let thumbnail = null;
   let thumbnailPreview = null;
   let error = '';
+  let acceptedDataTypes = [];
+
+  // Add a list of data types
+  const dataTypes = ['images', 'text', 'audio', 'video'];
 
   onMount(() => {
     if (pb.authStore.model?.role === 'DataProvider') {
@@ -29,6 +33,7 @@
       formData.append('deadline', deadline);
       formData.append('status', 'Draft');
       formData.append('creator', pb.authStore.model.id);
+      formData.append('accepted_data_types', JSON.stringify(acceptedDataTypes));
       if (thumbnail) {
         formData.append('thumbnail', thumbnail);
       }
@@ -89,6 +94,20 @@
     <div class="mb-4">
       <label for="title" class="block mb-2 font-semibold">Title</label>
       <input id="title" bind:value={title} type="text" class="w-full p-2 border rounded" required>
+    </div>
+    <div class="mb-4">
+      <label for="acceptedDataTypes" class="block mb-2 font-semibold">Accepted Data Types</label>
+      <select 
+        id="acceptedDataTypes" 
+        bind:value={acceptedDataTypes} 
+        multiple 
+        class="w-full p-2 border rounded" 
+        required
+      >
+        {#each dataTypes as dataType}
+          <option value={dataType}>{dataType}</option>
+        {/each}
+      </select>
     </div>
     <div class="mb-4">
       <label for="description" class="block mb-2 font-semibold">Description</label>

@@ -1,9 +1,11 @@
 <script>
   import { pb } from '../services/pocketbase';
   import { onMount } from 'svelte';
-  export let id; 
   import MarkdownRenderer from '../components/MarkdownRenderer.svelte';
   import { Link } from 'svelte-routing';
+
+  export let id;
+  
   let contract = null;
   let fileInput;
   let uploadStatus = '';
@@ -16,36 +18,39 @@
   let individualContribution = 0;
   let totalContribution = 0;
   let isContractCreator = false;
-  let debugLog = [];
-
+  let userRole = '';
 
   onMount(async () => {
+    userRole = pb.authStore.model.role;
     await loadContract();
   });
 
   async function loadContract() {
     try {
-
       contract = await pb.collection('Contract').getOne(id, {
         expand: 'creator,DataBatch_via_contract.DataPoint_via_batch'
       });
 
-
       isContractCreator = contract.creator === pb.authStore.model.id;
-
 
       if (contract.expand && contract.expand['DataBatch_via_contract']) {
         dataBatches = contract.expand['DataBatch_via_contract'];
-
       } else {
         dataBatches = [];
-
       }
 
       calculateStats();
     } catch (err) {
       error = `Error fetching contract: ${err.message}`;
+    }
+  }
 
+  async function approveContract() {
+    try {
+      await pb.collection('Contract').update(id, { status: 'Active' });
+      contract.status = 'Active';
+    } catch (err) {
+      error = `Error approving contract: ${err.message}`;
     }
   }
   
@@ -196,7 +201,14 @@
         {contract.price_per_point}
       </p>
       <p class="mb-2"><strong>Creator:</strong> {contract.expand?.creator?.name || 'Unknown'}</p>
-      
+      {#if userRole === 'Admin' && contract.status !== 'Active'}
+      <button 
+        on:click={approveContract}
+        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 mt-4"
+      >
+        Approve Contract
+      </button>
+    {/if}
     <div class="mt-6">
       <h2 class="text-xl font-semibold mb-4">Contract Progress</h2>
       <div class="w-full bg-gray-200 rounded-full h-8 mb-2 overflow-hidden">

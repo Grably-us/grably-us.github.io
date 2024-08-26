@@ -1,15 +1,12 @@
 <script>
   import { pb } from '../services/pocketbase';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
 
   export let contract;
+  export let userRole;
   const dispatch = createEventDispatcher();
 
   let progressPercentage = 0;
-
-  onMount(() => {
-    calculateProgressPercentage();
-  });
 
   $: if (contract) {
     calculateProgressPercentage();
@@ -40,10 +37,18 @@
       handleInteraction();
     }
   }
+
+  function getStatusColor(status) {
+    switch (status) {
+      case 'Active': return 'bg-green-100 border-green-500';
+      case 'Draft': return 'bg-yellow-100 border-yellow-500';
+      default: return 'bg-gray-100 border-gray-500';
+    }
+  }
 </script>
 
 <div 
-  class="bg-white shadow-md rounded-lg p-4 cursor-pointer hover:shadow-lg transition-shadow duration-300"
+  class="bg-white shadow-md rounded-lg p-4 cursor-pointer hover:shadow-lg transition-shadow duration-300 {userRole === 'Admin' ? getStatusColor(contract.status) : ''}"
   on:click={handleInteraction}
   on:keydown={handleKeyDown}
   role="button"
@@ -58,7 +63,11 @@
     />
     <div class="flex-grow">
       <h2 class="text-lg font-bold mb-1">{contract.title}</h2>
-      <p class="text-sm font-semibold mb-1">Active</p>
+      {#if userRole === 'Admin'}
+        <p class="text-sm font-semibold mb-1">Status: {contract.status}</p>
+      {:else}
+        <p class="text-sm font-semibold mb-1">Active</p>
+      {/if}
       <div class="w-full bg-gray-200 rounded-full h-2 mb-1">
         <div class="bg-blue-600 h-2 rounded-full" style="width: {progressPercentage}%"></div>
       </div>

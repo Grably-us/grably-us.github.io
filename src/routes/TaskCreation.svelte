@@ -30,7 +30,6 @@
     try {
       const records = await pb.collection('Contract').getList(1, 50, {
         sort: '-created',
-        filter: 'status = "Active"'
       });
       contracts = records.items;
     } catch (e) {
