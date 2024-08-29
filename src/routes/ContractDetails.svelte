@@ -118,6 +118,7 @@
         formData.append('tags', JSON.stringify([file.type])); // Add file type as a tag
         formData.append('comment', '');
         formData.append('rejection_reason', '');
+        formData.append('contract', id);  // Add this line to include the contract ID
 
         try {
           const createdDataPoint = await pb.collection('DataPoint').create(formData);
@@ -126,7 +127,7 @@
         } catch (error) {
           uploadErrors.push(`Error uploading ${file.name}: ${error.message}`);
         }
-      }
+        }
 
       // Update the batch with the created data points
       await pb.collection('DataBatch').update(batch.id, {
