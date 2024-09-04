@@ -3,7 +3,7 @@
 import { MeiliSearch } from 'meilisearch';
 
 const MEILISEARCH_HOST = 'https://back.grably.us/search/'; // Replace with your MeiliSearch host
-const MEILISEARCH_API_KEY = 'OXH8hjcfkKcLyPapOcpquv_zSHUs8sWke6lZuY6L4qo'; // Replace with your actual API key
+const MEILISEARCH_API_KEY = 'Gefe7fapGBlYf-MrfX6YwscSTL-7w92DNxiunJteBGw'; // Replace with your actual API key
 
 const searchClient = new MeiliSearch({
   host: MEILISEARCH_HOST,
