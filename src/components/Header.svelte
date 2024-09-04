@@ -116,9 +116,9 @@
     </div>
     
     <div class="flex items-center space-x-6">
-      <!-- {#if userRole === 'Customer' || userRole === 'Admin'}
+      {#if userRole === 'Customer' || userRole === 'Admin'}
         <SearchBar />
-      {/if} -->
+      {/if}
       {#if userRole !== 'DataProvider'}
         <a
           href="/new-contract"

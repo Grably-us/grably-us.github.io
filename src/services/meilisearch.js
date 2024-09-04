@@ -2,7 +2,7 @@
 
 import { MeiliSearch } from 'meilisearch';
 
-const MEILISEARCH_HOST = 'http://localhost:7700'; // Replace with your MeiliSearch host
+const MEILISEARCH_HOST = 'https://back.grably.us/search/'; // Replace with your MeiliSearch host
 const MEILISEARCH_API_KEY = 'OXH8hjcfkKcLyPapOcpquv_zSHUs8sWke6lZuY6L4qo'; // Replace with your actual API key
 
 const searchClient = new MeiliSearch({
