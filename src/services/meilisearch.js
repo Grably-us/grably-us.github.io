@@ -20,7 +20,7 @@ export async function getAvailableIndexes() {
   }
 }
 
-export async function search(query, index = 'movies') {
+export async function search(query, index = 'videos') {
   try {
     console.log(`Searching for "${query}" in index "${index}"`);
     const results = await searchClient.index(index).search(query, {
