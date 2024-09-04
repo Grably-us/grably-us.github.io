@@ -67,9 +67,6 @@
   }
 
   function getAvatarUrl(user) {
-    if (user?.avatar) {
-      return pb.files.getUrl(user, user.avatar);
-    }
     const hash = encodeURIComponent(user.id || user.email || 'default');
     return `https://api.dicebear.com/6.x/identicon/svg?seed=${hash}`;
   }
