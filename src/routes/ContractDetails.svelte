@@ -1,8 +1,8 @@
 <script>
   import { pb } from '../services/pocketbase';
   import { onMount } from 'svelte';
+  import { navigate, Link } from 'svelte-routing';
   import MarkdownRenderer from '../components/MarkdownRenderer.svelte';
-  import { Link } from 'svelte-routing';
 
   export let id;
   
@@ -19,6 +19,7 @@
   let totalContribution = 0;
   let isContractCreator = false;
   let userRole = '';
+  let showDeleteConfirmation = false;
 
   onMount(async () => {
     userRole = pb.authStore.model.role;
@@ -163,6 +164,21 @@
       default: return 'bg-gray-100';
     }
   }
+
+  function confirmDelete() {
+    showDeleteConfirmation = true;
+  }
+
+  async function deleteContract() {
+    try {
+      await pb.collection('Contract').delete(id);
+      navigate('/contracts');
+    } catch (e) {
+      console.error('Error deleting contract:', e);
+      error = e.message;
+    }
+  }
+
   $: progressPercentage = (totalContribution / (contract?.amount_requested || 1)) * 100 || 0;
   $: individualProgressPercentage = (individualContribution / (contract?.amount_requested || 1)) * 100 || 0;
   $: remainingFiles = Math.max(0, (contract?.amount_requested || 0) - totalFilesUploaded);
@@ -172,22 +188,31 @@
   {#if error}
     <p class="text-red-500">{error}</p>
   {:else if contract}
-    <div class="flex items-center mb-6">
-      <Link to="/contracts" class="mr-4">
-        <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center shadow-inner">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="white" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-        </div>
-      </Link>
-      <img 
-        src={getThumbnailUrl(contract)} 
-        alt="Contract thumbnail" 
-        class="w-24 h-24 object-cover rounded-full ml-4"
-      />
-      <h1 class="text-3xl font-bold ml-4">{contract.title}</h1>
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center">
+        <Link to="/contracts" class="mr-4">
+          <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center shadow-inner">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="white" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </div>
+        </Link>
+        <img 
+          src={getThumbnailUrl(contract)} 
+          alt="Contract thumbnail" 
+          class="w-24 h-24 object-cover rounded-full ml-4"
+        />
+        <h1 class="text-3xl font-bold ml-4">{contract.title}</h1>
+      </div>
+      {#if userRole === 'Admin' || isContractCreator}
+        <button 
+          on:click={confirmDelete}
+          class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+        >
+          Delete Contract
+        </button>
+      {/if}
     </div>
-    
     <div class="bg-white shadow-md rounded-lg p-6 mb-6">
       <MarkdownRenderer htmlContent={contract.description} />
       <p class="mb-2"><strong>Status:</strong> Active</p>
@@ -297,6 +322,37 @@
         {:else}
           <p>No data batches uploaded yet.</p>
         {/if}
+      </div>
+    {/if}
+
+    {#if showDeleteConfirmation}
+      <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" id="delete-modal">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+          <div class="mt-3 text-center">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Delete Confirmation</h3>
+            <div class="mt-2 px-7 py-3">
+              <p class="text-sm text-gray-500">
+                Are you sure you want to delete this contract? This action cannot be undone and all associated data will be permanently deleted.
+              </p>
+            </div>
+            <div class="items-center px-4 py-3">
+              <button
+                id="delete-btn"
+                class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300 mb-2"
+                on:click={deleteContract}
+              >
+                Delete
+              </button>
+              <button
+                id="cancel-btn"
+                class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                on:click={() => showDeleteConfirmation = false}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     {/if}
   {:else}
