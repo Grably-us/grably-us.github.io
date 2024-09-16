@@ -2,8 +2,8 @@
 
 import { MeiliSearch } from 'meilisearch';
 
-const MEILISEARCH_HOST = 'https://back.grably.us/search/'; // Replace with your MeiliSearch host
-const MEILISEARCH_API_KEY = 'Gefe7fapGBlYf-MrfX6YwscSTL-7w92DNxiunJteBGw'; // Replace with your actual API key
+const MEILISEARCH_HOST = import.meta.env.VITE_MEILISEARCH_HOST;
+const MEILISEARCH_API_KEY = import.meta.env.VITE_MEILISEARCH_API_KEY;
 
 const searchClient = new MeiliSearch({
   host: MEILISEARCH_HOST,
