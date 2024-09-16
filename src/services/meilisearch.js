@@ -2,8 +2,8 @@
 
 import { MeiliSearch } from 'meilisearch';
 
-const MEILISEARCH_HOST = import.meta.env.VITE_MEILISEARCH_HOST;
-const MEILISEARCH_API_KEY = import.meta.env.VITE_MEILISEARCH_API_KEY;
+const MEILISEARCH_HOST = process.env.MEILISEARCH_HOST;
+const MEILISEARCH_API_KEY = process.env.MEILISEARCH_API_KEY;
 
 const searchClient = new MeiliSearch({
   host: MEILISEARCH_HOST,

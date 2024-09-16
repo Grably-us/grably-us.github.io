@@ -42,6 +42,8 @@ export default {
     plugins: [
         replace({
             'process.env.BASE_PATH': JSON.stringify(basePath),
+            'process.env.MEILISEARCH_HOST': JSON.stringify(process.env.MEILISEARCH_HOST || 'https://back.grably.us/search/'),
+            'process.env.MEILISEARCH_API_KEY': JSON.stringify(process.env.MEILISEARCH_API_KEY || 'Gefe7fapGBlYf-MrfX6YwscSTL-7w92DNxiunJteBGw'),      
             preventAssignment: true
         }),
         svelte({
